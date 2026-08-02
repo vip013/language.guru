@@ -1,0 +1,161 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="128"
+    android:viewportHeight="128">
+
+    <!-- Soft outer circular background glow (translates well on Android launchers) -->
+    <path
+        android:fillColor="#1FA1FF"
+        android:pathData="M64,64m-58,0a58,58 0,1 1,116 0a58,58 0,1 1,-116 0" />
+
+    <!-- Cute Magic Sparkles and Stars in the Background -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M64,15 L65.5,19 L70,20.5 L65.5,22 L64,26 L62.5,22 L58,20.5 L62.5,19 Z" />
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M105,35 L106,38 L109,39 L106,40 L105,43 L104,40 L101,39 L104,38 Z" />
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M25,85 L26,88 L29,89 L26,90 L25,93 L24,90 L21,89 L24,88 Z" />
+
+    <!-- 1. LEFT SPEECH BUBBLE: "Hello" (Vibrant Sky Blue) -->
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M 15,45 C 15,35 25,28 36,28 C 47,28 55,35 55,45 C 55,52 49,58 42,60 L 36,70 L 36,60 C 25,60 15,54 15,45 Z" />
+    <!-- White Inner Symbol for "Hello" (Simple cute Speech lines or letter H) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M25,41 L45,41 A2,2 0,0,1 47,43 L47,43 A2,2 0,0,1 45,45 L25,45 A2,2 0,0,1 23,43 L23,43 A2,2 0,0,1 25,41 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,49 L42,49 A2,2 0,0,1 44,51 L44,51 A2,2 0,0,1 42,53 L28,53 A2,2 0,0,1 26,51 L26,51 A2,2 0,0,1 28,49 Z" />
+
+    <!-- 2. RIGHT SPEECH BUBBLE: "नमस्ते" (Vibrant Green) -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M 72,35 C 72,25 82,18 93,18 C 104,18 112,25 112,35 C 112,42 106,48 99,50 L 93,60 L 93,50 C 82,50 72,44 72,35 Z" />
+    <!-- White Inner Symbol for Devanagari text representation (elegant decorative line + dot) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M81,31 L103,31 A1.5,1.5 0,0,1 104.5,32.5 L104.5,32.5 A1.5,1.5 0,0,1 103,34 L81,34 A1.5,1.5 0,0,1 79.5,32.5 L79.5,32.5 A1.5,1.5 0,0,1 81,31 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M85,38 L99,38 A1.5,1.5 0,0,1 100.5,39.5 L100.5,39.5 A1.5,1.5 0,0,1 99,41 L85,41 A1.5,1.5 0,0,1 83.5,39.5 L83.5,39.5 A1.5,1.5 0,0,1 85,38 Z" />
+
+    <!-- 3. CARTOON KID IN THE CENTER (Waving with Yellow Hoodie) -->
+    <!-- Yellow Hoodie shoulders/body -->
+    <path
+        android:fillColor="#FFCA28"
+        android:pathData="M 39,112 C 39,95 89,95 89,112 L 85,128 L 43,128 Z" />
+    <!-- Hoodie white strings / zipper detail -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 62,108 L 62,122 A2,2 0,0,1 60,124 L 60,124 A2,2 0,0,1 58,122 L 58,108 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 66,108 L 66,122 A2,2 0,0,1 64,124 L 64,124 A2,2 0,0,1 62,122 L 62,108 Z" />
+
+    <!-- Skin neck -->
+    <path
+        android:fillColor="#FFCC80"
+        android:pathData="M 58,98 L 70,98 L 70,108 L 58,108 Z" />
+
+    <!-- Circular head (centered at 64, 76) -->
+    <path
+        android:fillColor="#FFCC80"
+        android:pathData="M 64,76m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
+
+    <!-- Rosy cheeks -->
+    <path
+        android:fillColor="#FF8A80"
+        android:pathData="M 47,82m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path
+        android:fillColor="#FF8A80"
+        android:pathData="M 81,82m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+
+    <!-- Cute smiling eyes -->
+    <path
+        android:fillColor="#3E2723"
+        android:pathData="M 50,73m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+    <path
+        android:fillColor="#3E2723"
+        android:pathData="M 78,73m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+
+    <!-- Cute happy open smile -->
+    <path
+        android:fillColor="#D84315"
+        android:pathData="M 57,84 C 57,92 71,92 71,84 Z" />
+
+    <!-- Kid's hair: Brown with cute messy spikes at the top -->
+    <path
+        android:fillColor="#5D4037"
+        android:pathData="M 37,65 C 37,45 91,45 91,65 C 80,60 70,60 64,65 C 58,60 48,60 37,65 Z" />
+    <!-- Hair spikes -->
+    <path
+        android:fillColor="#5D4037"
+        android:pathData="M 48,50 L 64,36 L 68,48 L 80,42 L 74,58 Z" />
+
+    <!-- Cute waving hand on the right side -->
+    <path
+        android:fillColor="#FFCC80"
+        android:pathData="M 91,80 C 91,72 101,72 101,80 L 98,95 L 91,95 Z" />
+    <!-- Hand fingers waving (3 fingers detail) -->
+    <path
+        android:fillColor="#FFCC80"
+        android:pathData="M 92,72 L 92,66 A1,1 0,0,1 94,66 L 94,72 Z" />
+    <path
+        android:fillColor="#FFCC80"
+        android:pathData="M 95,70 L 95,64 A1,1 0,0,1 97,64 L 97,70 Z" />
+    <path
+        android:fillColor="#FFCC80"
+        android:pathData="M 98,72 L 98,66 A1,1 0,0,1 100,66 L 100,72 Z" />
+
+    <!-- 4. PURPLE ABC BOOK (held by the kid on the left) -->
+    <path
+        android:fillColor="#673AB7"
+        android:pathData="M 28,92 L 44,92 A2,2 0,0,1 46,94 L 46,108 A2,2 0,0,1 44,110 L 28,110 Z" />
+    <!-- White letters "ABC" on the purple book cover -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 32,96 L 35,96 L 36,100 L 34,100 L 33.5,98 L 32.5,98 L 32,100 L 30,100 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 37,96 L 40,96 A1,1 0,0,1 41,97 L 41,97 A1,1 0,0,1 40,98 L 37,98 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 37,98 L 40,98 A1,1 0,0,1 41,99 L 41,99 A1,1 0,0,1 40,100 L 37,100 Z" />
+
+    <!-- 5. CUTE ELEPHANT at the bottom right corner -->
+    <path
+        android:fillColor="#B0BEC5"
+        android:pathData="M 90,108 C 90,100 115,100 115,108 L 115,124 L 108,124 L 108,118 L 97,118 L 97,124 L 90,124 Z" />
+    <!-- Trunk -->
+    <path
+        android:fillColor="#B0BEC5"
+        android:pathData="M 115,106 C 120,106 122,112 120,116 L 117,116 C 118,112 117,109 114,109 Z" />
+    <!-- Eye and Ear -->
+    <path
+        android:fillColor="#37474F"
+        android:pathData="M 108,105m-1.5,0a1.5,1.5 0,1 1,3 0a1.5,1.5 0,1 1,-3 0" />
+    <path
+        android:fillColor="#90A4AE"
+        android:pathData="M 96,103 C 94,103 92,108 94,112 C 96,114 99,114 99,110 Z" />
+
+    <!-- 6. TOY BLOCKS (A and 1 2 3) -->
+    <!-- Alphabet block 'A' on the bottom-left -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M 16,110 L 26,110 A1,1 0,0,1 27,111 L 27,121 A1,1 0,0,1 26,122 L 16,122 A1,1 0,0,1 15,121 L 15,111 A1,1 0,0,1 16,110 Z" />
+    <!-- Red letter 'A' -->
+    <path
+        android:fillColor="#E53935"
+        android:pathData="M 21,113 L 23,119 L 22,119 L 21.5,117 L 20.5,117 L 20,119 L 19,119 Z" />
+
+    <!-- Playful Smiling Star -->
+    <path
+        android:fillColor="#FFEB3B"
+        android:pathData="M 33,115 L 35,118 L 38,118 L 36,120 L 37,123 L 33,121 L 29,123 L 30,120 L 28,118 L 31,118 Z" />
+
+</vector>

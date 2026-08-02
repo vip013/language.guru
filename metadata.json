@@ -1,0 +1,8 @@
+{
+  "name": "Language Guru",
+  "description": "A beautiful, interactive kids language learning app supporting multiple languages with voice guidance, lessons, and progress tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
