@@ -22,27 +22,13 @@ jobs:
 
       - name: Check Gradle Wrapper
         run: |
-          echo "Current directory:"
           pwd
-
-          echo "Repository files:"
           ls -la
-
-          echo "Searching for gradlew:"
-          find . -maxdepth 4 -name gradlew -type f -print
-
-          if [ ! -f "./gradlew" ]; then
-            echo "ERROR: gradlew is not in repository root"
-            exit 1
-          fi
-
           chmod +x ./gradlew
+          ./gradlew --version
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Check Gradle
-        run: ./gradlew --version
 
       - name: Build Release AAB
         run: ./gradlew :app:bundleRelease
