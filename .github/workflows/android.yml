@@ -35,13 +35,18 @@ jobs:
           echo "Project files:"
           ls -la
 
-      - name: Build Release AAB (without signing)
-        run: gradle :app:bundleRelease --no-daemon -x signReleaseBundle
+      - name: Build Release AAB
+        run: gradle :app:bundleRelease --no-daemon
 
       - name: Find AAB
         run: |
           echo "AAB files:"
           find . -type f -name "*.aab" -print
+          
+      - name: Check build output
+        run: |
+          echo "Build outputs directory:"
+          ls -la app/build/outputs/bundle/release/ 2>/dev/null || echo "Directory does not exist"
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
