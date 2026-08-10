@@ -35,8 +35,8 @@ jobs:
           echo "Project files:"
           ls -la
 
-      - name: Build Release AAB
-        run: gradle :app:bundleRelease --no-daemon
+      - name: Build Release AAB (without signing)
+        run: gradle :app:bundleRelease --no-daemon -x signReleaseBundle
 
       - name: Find AAB
         run: |
