@@ -15,7 +15,8 @@ android {
     compileSdk { version = release(36) { minorApiLevel = 1 } }
 
     defaultConfig {
-        applicationId = "com.languageguru.learn"
+        // IMPORTANT: This must match the package name registered in Google Play Console
+        applicationId = "com.languageguru.app"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -32,10 +33,13 @@ android {
                 val outputFile = file(
                     "${layout.buildDirectory.get()}/intermediates/signing/release-upload-key.p12"
                 )
+
                 outputFile.parentFile.mkdirs()
+
                 outputFile.writeBytes(
                     Base64.getDecoder().decode(keystoreBase64)
                 )
+
                 outputFile
             } else {
                 file("${rootDir}/release-upload-key.p12")
