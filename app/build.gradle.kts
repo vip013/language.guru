@@ -19,8 +19,10 @@ android {
         applicationId = "com.languageguru.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+
+        // Increased because version code 1 is already used in Google Play Console
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
