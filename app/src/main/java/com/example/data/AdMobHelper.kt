@@ -18,18 +18,25 @@ import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 
 object AdMobHelper {
+
     private const val TAG = "AdMobHelper"
 
-    // Your real AdMob Banner Ad Unit ID
+    // --------------------------------------------------
+    // REAL ADMOB AD UNIT IDs
+    // --------------------------------------------------
+
+    // Banner
     private const val BANNER_AD_UNIT_ID =
         "ca-app-pub-9590633818352325/5398270056"
 
-    // Keep Google test IDs for Interstitial and Rewarded for now
+    // Interstitial
     private const val INTERSTITIAL_AD_UNIT_ID =
-        "ca-app-pub-3940256099942544/1033173712"
+        "ca-app-pub-9590633818352325/8357645316"
 
+    // Rewarded
     private const val REWARDED_AD_UNIT_ID =
-        "ca-app-pub-3940256099942544/5224354917"
+        "ca-app-pub-9590633818352325/2529286917"
+
 
     private var interstitialAd: InterstitialAd? = null
     private var rewardedAd: RewardedAd? = null
@@ -40,10 +47,17 @@ object AdMobHelper {
     private val handler = Handler(Looper.getMainLooper())
     private var isInitialized = false
 
+
+    // --------------------------------------------------
+    // INITIALIZE ADMOB
+    // --------------------------------------------------
+
     fun initialize(context: Context) {
+
         if (isInitialized) return
 
         try {
+
             val requestConfiguration =
                 MobileAds.getRequestConfiguration()
                     .toBuilder()
@@ -58,27 +72,37 @@ object AdMobHelper {
             MobileAds.setRequestConfiguration(requestConfiguration)
 
             MobileAds.initialize(context) {
+
                 Log.d(TAG, "AdMob Initialized successfully.")
+
                 isInitialized = true
 
+                // Preload ads
                 loadInterstitialAd(context.applicationContext)
                 loadRewardedAd(context.applicationContext)
             }
+
         } catch (e: Exception) {
+
             Log.e(TAG, "Error initializing AdMob", e)
         }
     }
+
 
     private fun getAdRequest(): AdRequest {
         return AdRequest.Builder().build()
     }
 
-    // --------------------------------------------------
-    // Interstitial Ads
-    // --------------------------------------------------
+
+    // ==================================================
+    // INTERSTITIAL ADS
+    // ==================================================
 
     fun loadInterstitialAd(context: Context) {
-        if (isInterstitialLoading || interstitialAd != null) return
+
+        if (isInterstitialLoading || interstitialAd != null) {
+            return
+        }
 
         isInterstitialLoading = true
 
@@ -88,26 +112,38 @@ object AdMobHelper {
             context,
             INTERSTITIAL_AD_UNIT_ID,
             getAdRequest(),
+
             object : InterstitialAdLoadCallback() {
 
                 override fun onAdLoaded(ad: InterstitialAd) {
+
                     interstitialAd = ad
                     isInterstitialLoading = false
 
-                    Log.d(TAG, "Interstitial Ad loaded successfully.")
+                    Log.d(
+                        TAG,
+                        "Interstitial Ad loaded successfully."
+                    )
 
                     ad.fullScreenContentCallback =
                         object : FullScreenContentCallback() {
 
                             override fun onAdDismissedFullScreenContent() {
+
                                 interstitialAd = null
-                                Log.d(TAG, "Interstitial Ad dismissed.")
+
+                                Log.d(
+                                    TAG,
+                                    "Interstitial Ad dismissed."
+                                )
+
                                 loadInterstitialAd(context)
                             }
 
                             override fun onAdFailedToShowFullScreenContent(
                                 error: AdError
                             ) {
+
                                 interstitialAd = null
                                 isInterstitialLoading = false
 
@@ -121,7 +157,11 @@ object AdMobHelper {
                         }
                 }
 
-                override fun onAdFailedToLoad(error: LoadAdError) {
+
+                override fun onAdFailedToLoad(
+                    error: LoadAdError
+                ) {
+
                     interstitialAd = null
                     isInterstitialLoading = false
 
@@ -141,10 +181,12 @@ object AdMobHelper {
         )
     }
 
+
     fun showInterstitialAd(
         activity: Activity,
         onAdClosed: () -> Unit
     ) {
+
         activity.runOnUiThread {
 
             val ad = interstitialAd
@@ -155,6 +197,7 @@ object AdMobHelper {
                     object : FullScreenContentCallback() {
 
                         override fun onAdDismissedFullScreenContent() {
+
                             interstitialAd = null
 
                             Log.d(
@@ -169,9 +212,11 @@ object AdMobHelper {
                             )
                         }
 
+
                         override fun onAdFailedToShowFullScreenContent(
                             error: AdError
                         ) {
+
                             interstitialAd = null
 
                             Log.e(
@@ -205,12 +250,16 @@ object AdMobHelper {
         }
     }
 
-    // --------------------------------------------------
-    // Rewarded Ads
-    // --------------------------------------------------
+
+    // ==================================================
+    // REWARDED ADS
+    // ==================================================
 
     fun loadRewardedAd(context: Context) {
-        if (isRewardedLoading || rewardedAd != null) return
+
+        if (isRewardedLoading || rewardedAd != null) {
+            return
+        }
 
         isRewardedLoading = true
 
@@ -220,18 +269,26 @@ object AdMobHelper {
             context,
             REWARDED_AD_UNIT_ID,
             getAdRequest(),
+
             object : RewardedAdLoadCallback() {
 
-                override fun onAdLoaded(ad: RewardedAd) {
+                override fun onAdLoaded(
+                    ad: RewardedAd
+                ) {
+
                     rewardedAd = ad
                     isRewardedLoading = false
 
-                    Log.d(TAG, "Rewarded Ad loaded successfully.")
+                    Log.d(
+                        TAG,
+                        "Rewarded Ad loaded successfully."
+                    )
 
                     ad.fullScreenContentCallback =
                         object : FullScreenContentCallback() {
 
                             override fun onAdDismissedFullScreenContent() {
+
                                 rewardedAd = null
 
                                 Log.d(
@@ -242,9 +299,11 @@ object AdMobHelper {
                                 loadRewardedAd(context)
                             }
 
+
                             override fun onAdFailedToShowFullScreenContent(
                                 error: AdError
                             ) {
+
                                 rewardedAd = null
                                 isRewardedLoading = false
 
@@ -258,7 +317,11 @@ object AdMobHelper {
                         }
                 }
 
-                override fun onAdFailedToLoad(error: LoadAdError) {
+
+                override fun onAdFailedToLoad(
+                    error: LoadAdError
+                ) {
+
                     rewardedAd = null
                     isRewardedLoading = false
 
@@ -278,11 +341,13 @@ object AdMobHelper {
         )
     }
 
+
     fun showRewardedAd(
         activity: Activity,
         onRewardEarned: () -> Unit,
         onAdClosed: () -> Unit
     ) {
+
         activity.runOnUiThread {
 
             val ad = rewardedAd
@@ -293,6 +358,7 @@ object AdMobHelper {
                     object : FullScreenContentCallback() {
 
                         override fun onAdDismissedFullScreenContent() {
+
                             rewardedAd = null
 
                             Log.d(
@@ -307,9 +373,11 @@ object AdMobHelper {
                             )
                         }
 
+
                         override fun onAdFailedToShowFullScreenContent(
                             error: AdError
                         ) {
+
                             rewardedAd = null
 
                             Log.e(
@@ -325,6 +393,7 @@ object AdMobHelper {
                         }
                     }
 
+
                 ad.show(activity) { rewardItem ->
 
                     Log.d(
@@ -339,10 +408,11 @@ object AdMobHelper {
 
                 Log.d(
                     TAG,
-                    "Rewarded ad not ready, calling rewards instantly as fallback."
+                    "Rewarded ad not ready."
                 )
 
                 onRewardEarned()
+
                 onAdClosed()
 
                 loadRewardedAd(
@@ -353,15 +423,18 @@ object AdMobHelper {
     }
 }
 
-// --------------------------------------------------
-// Banner Ad
-// --------------------------------------------------
+
+// ==================================================
+// BANNER AD
+// ==================================================
 
 @Composable
 fun AdMobBanner(
     modifier: Modifier = Modifier
 ) {
+
     AndroidView(
+
         modifier = modifier
             .fillMaxWidth()
             .height(50.dp),
@@ -372,8 +445,8 @@ fun AdMobBanner(
 
                 setAdSize(AdSize.BANNER)
 
-                // Your real AdMob Banner Ad Unit ID
-                adUnitId = "ca-app-pub-9590633818352325/5398270056"
+                adUnitId =
+                    "ca-app-pub-9590633818352325/5398270056"
 
                 loadAd(
                     AdRequest.Builder().build()
