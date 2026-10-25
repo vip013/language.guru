@@ -20,8 +20,8 @@ android {
         minSdk = 24
         targetSdk = 36
 
-        // Version 1 and 2 are already used in Google Play Console
-        versionCode = 3
+        // Version 1, 2 and 3 are already used in Google Play Console
+        versionCode = 4
         versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
