@@ -1,11 +1,24 @@
 package com.example.data
 
 data class LearningItem(
-    val display: String,         // Large text to show (e.g., "అ" or "A")
-    val subtitle: String,        // Pronunciation / spelling help (e.g., "a" or "Apple")
-    val voiceText: String,       // Text to be spoken aloud (e.g., "అ" or "Apple")
-    val visualEmoji: String = "" // Educational illustration emoji
-)
+    val display: String = "",         // Large text to show (e.g., "అ" or "A")
+    val subtitle: String = "",        // Pronunciation / spelling help (e.g., "a" or "Apple")
+    val voiceText: String = "",       // Text to be spoken aloud (e.g., "అ" or "Apple")
+    val visualEmoji: String = "",     // Educational illustration emoji
+    val id: String = "",
+    val language: String = "",
+    val category: String = "",
+    val nativeText: String = display,
+    val ttsText: String = voiceText.ifEmpty { display },
+    val transliteration: String = "",
+    val meaning: String = subtitle,
+    val image: String = visualEmoji,
+    val pronunciation: String = "",
+    val alternatives: List<String> = emptyList()
+) {
+    val cleanTarget: String
+        get() = nativeText.ifEmpty { display }.trim()
+}
 
 enum class DifficultyLevel {
     BEGINNER, INTERMEDIATE, ADVANCED
@@ -300,8 +313,8 @@ enum class LessonCategory {
     fun getIcon(langCode: String): String = when (this) {
         LETTERS -> when (langCode) {
             "te" -> "అ"
-            "ta" -> "అ"
-            "hi" -> "అ"
+            "ta" -> "அ"
+            "hi" -> "अ"
             "kn" -> "ಅ"
             "ml" -> "അ"
             "bn" -> "অ"
@@ -370,7 +383,35 @@ fun getNewCategoryLessons(langCode: String): Map<LessonCategory, List<LearningIt
                 LearningItem("വട്ടം", "Vattam (Circle)", "വട്ടം", "🔴"),
                 LearningItem("ചതുരം", "Chathuram (Square)", "ചതുരം", "🟩"),
                 LearningItem("ദീർഘചതുരം", "Deerghachathuram (Rectangle)", "ദീർഘചതുരം", "█"),
-                LearningItem("നಕ್ಷത്രം", "Nakshathram (Star)", "നಕ್ಷത്രം", "⭐")
+                LearningItem("നക്ഷത്രം", "Nakshathram (Star)", "നക്ഷത്രം", "⭐")
+            )
+            "ar" -> listOf(
+                LearningItem("مثلث", "Muthallath (Triangle)", "مثلث", "🔺"),
+                LearningItem("دائرة", "Da'irah (Circle)", "دائرة", "🔴"),
+                LearningItem("مربع", "Murabba' (Square)", "مربع", "🟩"),
+                LearningItem("مستطيل", "Mustateel (Rectangle)", "مستطيل", "█"),
+                LearningItem("نجمة", "Najmah (Star)", "نجمة", "⭐")
+            )
+            "bn" -> listOf(
+                LearningItem("ত্রিভুজ", "Tribhuj (Triangle)", "ত্রিভুজ", "🔺"),
+                LearningItem("বৃত্ত", "Britto (Circle)", "বৃত্ত", "🔴"),
+                LearningItem("বর্গক্ষেত্র", "Borgokhetro (Square)", "বর্গক্ষেত্র", "🟩"),
+                LearningItem("আয়তক্ষেত্র", "Ayotokhetro (Rectangle)", "আয়তক্ষেত্র", "█"),
+                LearningItem("তারা", "Tara (Star)", "তারা", "⭐")
+            )
+            "mr" -> listOf(
+                LearningItem("त्रिकोण", "Trikon (Triangle)", "त्रिकोण", "🔺"),
+                LearningItem("वर्तुळ", "Vartul (Circle)", "वर्तुळ", "🔴"),
+                LearningItem("चौरस", "Chauras (Square)", "चौरस", "🟩"),
+                LearningItem("आयत", "Aayat (Rectangle)", "आयत", "█"),
+                LearningItem("तारा", "Tara (Star)", "तारा", "⭐")
+            )
+            "gu" -> listOf(
+                LearningItem("ત્રિકોણ", "Trikon (Triangle)", "ત્રિકોણ", "🔺"),
+                LearningItem("વર્તુળ", "Vartul (Circle)", "વર્તુળ", "🔴"),
+                LearningItem("ચોરસ", "Choras (Square)", "ચોરસ", "🟩"),
+                LearningItem("લંબચોરસ", "Lambchoras (Rectangle)", "લંબચોરસ", "█"),
+                LearningItem("તારો", "Taro (Star)", "તારો", "⭐")
             )
             else -> listOf(
                 LearningItem("Triangle", "Triangle", "Triangle", "🔺"),
@@ -410,11 +451,39 @@ fun getNewCategoryLessons(langCode: String): Map<LessonCategory, List<LearningIt
                 LearningItem("ಸಮಾನ (=)", "Samaana (Equals)", "ಸಮಾನ", "🟰")
             )
             "ml" -> listOf(
-                LearningItem("கூட்டல் (+)", "Koottal (Addition)", "கூட்டல்", "➕"),
-                LearningItem("കുറയ്ക്കல் (-)", "Kuraykkal (Subtraction)", "കുറയ്ക്കல்", "➖"),
-                LearningItem("గుണനം (×)", "Gunanam (Multiplication)", "గుണനം", "✖️"),
+                LearningItem("സങ്കലനം (+)", "Sankalanam (Addition)", "സങ്കലനം", "➕"),
+                LearningItem("കുറയ്ക്കൽ (-)", "Kuraykkal (Subtraction)", "കുറയ്ക്കൽ", "➖"),
+                LearningItem("ഗുണനം (×)", "Gunanam (Multiplication)", "ഗുണനം", "✖️"),
                 LearningItem("ഹരണം (÷)", "Haranam (Division)", "ഹരണം", "➗"),
                 LearningItem("തുല്യം (=)", "Thulyam (Equals)", "തുല്യം", "🟰")
+            )
+            "ar" -> listOf(
+                LearningItem("جمع (+)", "Jam' (Addition)", "جمع", "➕"),
+                LearningItem("طرح (-)", "Tarh (Subtraction)", "طرح", "➖"),
+                LearningItem("ضرب (×)", "Darb (Multiplication)", "ضرب", "✖️"),
+                LearningItem("قسمة (÷)", "Qismah (Division)", "قسمة", "➗"),
+                LearningItem("يساوي (=)", "Yusawi (Equals)", "يساوي", "🟰")
+            )
+            "bn" -> listOf(
+                LearningItem("যোগ (+)", "Jog (Addition)", "যোগ", "➕"),
+                LearningItem("বিয়োগ (-)", "Biyog (Subtraction)", "বিয়োগ", "➖"),
+                LearningItem("গুণ (×)", "Gun (Multiplication)", "গুণ", "✖️"),
+                LearningItem("ভাগ (÷)", "Bhag (Division)", "ভাগ", "➗"),
+                LearningItem("সমান (=)", "Soman (Equals)", "সমান", "🟰")
+            )
+            "mr" -> listOf(
+                LearningItem("बेरीज (+)", "Berij (Addition)", "बेरीज", "➕"),
+                LearningItem("वजाबाकी (-)", "Vajabaki (Subtraction)", "वजाबाकी", "➖"),
+                LearningItem("गुणाकार (×)", "Gunakar (Multiplication)", "गुणाकार", "✖️"),
+                LearningItem("भागाकार (÷)", "Bhagakar (Division)", "भागाकार", "➗"),
+                LearningItem("समान (=)", "Saman (Equals)", "समान", "🟰")
+            )
+            "gu" -> listOf(
+                LearningItem("સરવાળો (+)", "Sarvalo (Addition)", "સરવાળો", "➕"),
+                LearningItem("બાદબાકી (-)", "Badbaki (Subtraction)", "બાદબાકી", "➖"),
+                LearningItem("ગુણાકાર (×)", "Gunakar (Multiplication)", "ગુણાકાર", "✖️"),
+                LearningItem("ભાગાકાર (÷)", "Bhagakar (Division)", "ભાગાકાર", "➗"),
+                LearningItem("બરાબર (=)", "Barabar (Equals)", "બરાબર", "🟰")
             )
             else -> listOf(
                 LearningItem("Addition (+)", "Addition", "Addition", "➕"),
@@ -453,7 +522,31 @@ fun getNewCategoryLessons(langCode: String): Map<LessonCategory, List<LearningIt
                 LearningItem("കിഴക്ക്", "Kizhakku (East)", "കിഴക്ക്", "🌅 ➡️"),
                 LearningItem("പടിഞ്ഞാറ്", "Padinjaru (West)", "പടിഞ്ഞാറ്", "🌇 ⬅️"),
                 LearningItem("വടക്ക്", "Vadakku (North)", "വടക്ക്", "🏔️ ⬆️"),
-                LearningItem("தெക്ക്", "Thekku (South)", "தெക്ക്", "🌊 ⬇️")
+                LearningItem("തെക്ക്", "Thekku (South)", "തെക്ക്", "🌊 ⬇️")
+            )
+            "ar" -> listOf(
+                LearningItem("الشرق", "Al-Sharq (East)", "الشرق", "🌅 ➡️"),
+                LearningItem("الغرب", "Al-Gharb (West)", "الغرب", "🌇 ⬅️"),
+                LearningItem("الشمال", "Al-Shamal (North)", "الشمال", "🏔️ ⬆️"),
+                LearningItem("الجنوب", "Al-Janoub (South)", "الجنوب", "🌊 ⬇️")
+            )
+            "bn" -> listOf(
+                LearningItem("পূর্ব", "Purba (East)", "পূর্ব", "🌅 ➡️"),
+                LearningItem("পশ্চিম", "Pashchim (West)", "পশ্চিম", "🌇 ⬅️"),
+                LearningItem("উত্তর", "Uttar (North)", "উত্তর", "🏔️ ⬆️"),
+                LearningItem("দক্ষিণ", "Dakshin (South)", "দক্ষিণ", "🌊 ⬇️")
+            )
+            "mr" -> listOf(
+                LearningItem("पूर्व", "Purva (East)", "पूर्व", "🌅 ➡️"),
+                LearningItem("पश्चिम", "Pashchim (West)", "पश्चिम", "🌇 ⬅️"),
+                LearningItem("उत्तर", "Uttar (North)", "उत्तर", "🏔️ ⬆️"),
+                LearningItem("दक्षिण", "Dakshin (South)", "दक्षिण", "🌊 ⬇️")
+            )
+            "gu" -> listOf(
+                LearningItem("પૂર્વ", "Purva (East)", "પૂર્વ", "🌅 ➡️"),
+                LearningItem("પશ્ચિમ", "Pashchim (West)", "પશ્ચિમ", "🌇 ⬅️"),
+                LearningItem("ઉત્તર", "Uttar (North)", "ઉત્તર", "🏔️ ⬆️"),
+                LearningItem("દક્ષિણ", "Dakshin (South)", "દક્ષિણ", "🌊 ⬇️")
             )
             else -> listOf(
                 LearningItem("East", "East", "East", "🌅 ➡️"),
@@ -497,6 +590,34 @@ fun getNewCategoryLessons(langCode: String): Map<LessonCategory, List<LearningIt
                 LearningItem("ബാഗ്", "Bag (School Bag)", "ബാഗ്", "🎒"),
                 LearningItem("നോട്ട്ബുക്ക്", "Notebook", "നോട്ട്ബുക്ക്", "📝"),
                 LearningItem("റബ്ബർ", "Rabbar (Eraser)", "റബ്ബർ", "🧽")
+            )
+            "ar" -> listOf(
+                LearningItem("كتاب", "Kitab (Book)", "كتاب", "📖"),
+                LearningItem("قلم", "Qalam (Pen)", "قلم", "🖊️"),
+                LearningItem("حقيبة", "Haqeebah (School Bag)", "حقيبة", "🎒"),
+                LearningItem("دفتر", "Daftar (Notebook)", "دفتر", "📝"),
+                LearningItem("ممحاة", "Mimhat (Eraser)", "ممحاة", "🧽")
+            )
+            "bn" -> listOf(
+                LearningItem("বই", "Boi (Book)", "বই", "📖"),
+                LearningItem("কলম", "Kolom (Pen)", "কলম", "🖊️"),
+                LearningItem("ব্যাগ", "Bag (School Bag)", "ব্যাগ", "🎒"),
+                LearningItem("খাতা", "Khata (Notebook)", "খাতা", "📝"),
+                LearningItem("রবার", "Robar (Eraser)", "রবার", "🧽")
+            )
+            "mr" -> listOf(
+                LearningItem("पुस्तक", "Pustak (Book)", "पुस्तक", "📖"),
+                LearningItem("पेन", "Pen (Pen)", "पेन", "🖊️"),
+                LearningItem("दप्तर", "Daptar (Bag)", "दप्तर", "🎒"),
+                LearningItem("वही", "Vahi (Notebook)", "वही", "📝"),
+                LearningItem("खोडरबर", "Khodrabar (Eraser)", "खोडरबर", "🧽")
+            )
+            "gu" -> listOf(
+                LearningItem("પુસ્તક", "Pustak (Book)", "પુસ્તક", "📖"),
+                LearningItem("પેન", "Pen (Pen)", "પેન", "🖊️"),
+                LearningItem("દફતર", "Daftar (School Bag)", "દફતર", "🎒"),
+                LearningItem("નોટબુક", "Notebook", "નોટબુક", "📝"),
+                LearningItem("રબર", "Rabar (Eraser)", "રબર", "🧽")
             )
             else -> listOf(
                 LearningItem("Book", "Book", "Book", "📖"),
@@ -542,6 +663,34 @@ fun getNewCategoryLessons(langCode: String): Map<LessonCategory, List<LearningIt
                 LearningItem("മേഘം", "Megham (Cloudy)", "മേഘം", "☁️"),
                 LearningItem("തണുപ്പ്", "Thanuppu (Cold)", "തണുപ്പ്", "❄️")
             )
+            "ar" -> listOf(
+                LearningItem("مشمس", "Mushmis (Sunny)", "مشمس", "☀️"),
+                LearningItem("ممطر", "Mumtir (Rainy)", "ممطر", "🌧️"),
+                LearningItem("عاصف", "'Aasif (Windy)", "عاصف", "💨"),
+                LearningItem("غائم", "Gha'im (Cloudy)", "غائم", "☁️"),
+                LearningItem("بارد", "Barid (Cold)", "بارد", "❄️")
+            )
+            "bn" -> listOf(
+                LearningItem("রৌদ্রোজ্জ্বল", "Roudrojjol (Sunny)", "রৌদ্রোজ্জ্বল", "☀️"),
+                LearningItem("বৃষ্টিমুখর", "Brishtimukhor (Rainy)", "বৃষ্টিমুখর", "🌧️"),
+                LearningItem("ঝোড়ো", "Jhoro (Windy)", "ঝোড়ো", "💨"),
+                LearningItem("মেঘলা", "Meghla (Cloudy)", "মেঘলা", "☁️"),
+                LearningItem("ঠান্ডা", "Thanda (Cold)", "ঠান্ডা", "❄️")
+            )
+            "mr" -> listOf(
+                LearningItem("ऊन", "Oon (Sunny)", "ऊन", "☀️"),
+                LearningItem("पाऊस", "Paus (Rainy)", "पाऊस", "🌧️"),
+                LearningItem("वारा", "Vara (Windy)", "वारा", "💨"),
+                LearningItem("ढगाळ", "Dhagal (Cloudy)", "ढगाळ", "☁️"),
+                LearningItem("थंडी", "Thandi (Cold)", "थंडी", "❄️")
+            )
+            "gu" -> listOf(
+                LearningItem("તડકો", "Tadko (Sunny)", "તડકો", "☀️"),
+                LearningItem("વરસાદ", "Varsad (Rainy)", "વરસાદ", "🌧️"),
+                LearningItem("પવન", "Pavan (Windy)", "પવન", "💨"),
+                LearningItem("વાદળછાયું", "Vadalchhayu (Cloudy)", "વાદળછાયું", "☁️"),
+                LearningItem("ઠંડી", "Thandi (Cold)", "ઠંડી", "❄️")
+            )
             else -> listOf(
                 LearningItem("Sunny", "Sunny", "Sunny", "☀️"),
                 LearningItem("Rainy", "Rainy", "Rainy", "🌧️"),
@@ -558,9 +707,42 @@ class LanguageConfig(
     val nativeName: String,
     val flag: String,
     val title: String,
-    lessons: Map<LessonCategory, List<LearningItem>>
+    val ttsLocale: String = when (code) {
+        "te" -> "te-IN"
+        "ta" -> "ta-IN"
+        "hi" -> "hi-IN"
+        "ar" -> "ar-SA"
+        "kn" -> "kn-IN"
+        "ml" -> "ml-IN"
+        "bn" -> "bn-IN"
+        "mr" -> "mr-IN"
+        "gu" -> "gu-IN"
+        else -> "en-US"
+    },
+    val speechLocale: String = when (code) {
+        "te" -> "te-IN"
+        "ta" -> "ta-IN"
+        "hi" -> "hi-IN"
+        "ar" -> "ar-SA"
+        "kn" -> "kn-IN"
+        "ml" -> "ml-IN"
+        "bn" -> "bn-IN"
+        "mr" -> "mr-IN"
+        "gu" -> "gu-IN"
+        else -> "en-US"
+    },
+    val isRtl: Boolean = code == "ar" || code == "ur",
+    lessons: Map<LessonCategory, List<LearningItem>> = emptyMap()
 ) {
     val lessons: Map<LessonCategory, List<LearningItem>> = lessons + getNewCategoryLessons(code)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is LanguageConfig) return false
+        return code == other.code
+    }
+
+    override fun hashCode(): Int = code.hashCode()
 }
 
 // Global lists of vowels and consonants for each language
@@ -821,7 +1003,7 @@ fun generateEnglishBasicWords(): List<LearningItem> {
         Triple("Mountain", "mountain", "⛰️"),
         Triple("Sea", "sea", "🌊"),
         Triple("Chair", "chair", "🪑"),
-        Triple("Table", "table", "🪵"),
+        Triple("Table", "table", "🍽️"),
         Triple("Light", "light", "💡"),
         Triple("Door", "door", "🚪"),
         Triple("Key", "key", "🔑"),
@@ -927,7 +1109,7 @@ fun generateTeluguBasicWords(): List<LearningItem> {
         Triple("పర్వతం", "Parvatham (Mountain)", "⛰️"),
         Triple("సముద్రం", "Samudram (Sea)", "🌊"),
         Triple("కుర్చీ", "Kurchi (Chair)", "🪑"),
-        Triple("బల్ల", "Balla (Table)", "🪵"),
+        Triple("బల్ల", "Balla (Table)", "🍽️"),
         Triple("కాంతి", "Kanthi (Light)", "💡"),
         Triple("తలుపు", "Talupu (Door)", "🚪"),
         Triple("తాళంచెవి", "Thalamchevi (Key)", "🔑"),
@@ -1033,7 +1215,7 @@ fun generateHindiBasicWords(): List<LearningItem> {
         Triple("पहाड़", "Pahaad (Mountain)", "⛰️"),
         Triple("समुद्र", "Samudra (Sea)", "🌊"),
         Triple("कुर्सी", "Kursi (Chair)", "🪑"),
-        Triple("मेज", "Mej (Table)", "🪵"),
+        Triple("मेज", "Mej (Table)", "🍽️"),
         Triple("रोशनी", "Roshni (Light)", "💡"),
         Triple("दरवाजा", "Darwaja (Door)", "🚪"),
         Triple("चाबी", "Chabi (Key)", "🔑"),
@@ -1139,7 +1321,7 @@ fun generateTamilBasicWords(): List<LearningItem> {
         Triple("மலை", "Malai (Mountain)", "⛰️"),
         Triple("கடல்", "Kadal (Sea)", "🌊"),
         Triple("நாற்காலி", "Naarkali (Chair)", "🪑"),
-        Triple("மேஜை", "Mejai (Table)", "🪵"),
+        Triple("மேஜை", "Mejai (Table)", "🍽️"),
         Triple("ஒளி", "Oli (Light)", "💡"),
         Triple("கதவு", "Kathavu (Door)", "🚪"),
         Triple("சாவி", "Saavi (Key)", "🔑"),
@@ -1245,7 +1427,7 @@ fun generateMalayalamBasicWords(): List<LearningItem> {
         Triple("മല", "Mala (Mountain)", "⛰️"),
         Triple("കടൽ", "Kadal (Sea)", "🌊"),
         Triple("കസേര", "Kasera (Chair)", "🪑"),
-        Triple("മേശ", "Mesha (Table)", "🪵"),
+        Triple("മേശ", "Mesha (Table)", "🍽️"),
         Triple("വെളിച്ചം", "Velicham (Light)", "💡"),
         Triple("വാതിൽ", "Vaathil (Door)", "🚪"),
         Triple("താക്കോൽ", "Thaakkol (Key)", "🔑"),
@@ -1351,7 +1533,7 @@ fun generateBengaliBasicWords(): List<LearningItem> {
         Triple("পাহাড়", "Pahar (Mountain)", "⛰️"),
         Triple("সমুদ্র", "Shomudro (Sea)", "🌊"),
         Triple("চেয়ার", "Cheyar (Chair)", "🪑"),
-        Triple("টেবিল", "Tebil (Table)", "🪵"),
+        Triple("টেবিল", "Tebil (Table)", "🍽️"),
         Triple("আলো", "Alo (Light)", "💡"),
         Triple("দরজা", "Dorja (Door)", "🚪"),
         Triple("চাবি", "Chabi (Key)", "🔑"),
@@ -1457,7 +1639,7 @@ fun generateMarathiBasicWords(): List<LearningItem> {
         Triple("डोंगर", "Dongar (Mountain)", "⛰️"),
         Triple("समुद्र", "Samudra (Sea)", "🌊"),
         Triple("खुर्ची", "Khurchi (Chair)", "🪑"),
-        Triple("मेज", "Mej (Table)", "🪵"),
+        Triple("मेज", "Mej (Table)", "🍽️"),
         Triple("प्रकाश", "Prakash (Light)", "💡"),
         Triple("दरवाजा", "Darwaja (Door)", "🚪"),
         Triple("चावी", "Chavi (Key)", "🔑"),
@@ -1563,7 +1745,7 @@ fun generateGujaratiBasicWords(): List<LearningItem> {
         Triple("પર્વત", "Parvat (Mountain)", "⛰️"),
         Triple("દરિયો", "Dariyo (Sea)", "🌊"),
         Triple("ખુરશી", "Khurshi (Chair)", "🪑"),
-        Triple("ટેબલ", "Tebal (Table)", "🪵"),
+        Triple("ટેબલ", "Tebal (Table)", "🍽️"),
         Triple("પ્રકાશ", "Prakash (Light)", "💡"),
         Triple("દરવાજો", "Darwajo (Door)", "🚪"),
         Triple("ચાવી", "Chavi (Key)", "🔑"),
@@ -1669,7 +1851,7 @@ fun generateKannadaBasicWords(): List<LearningItem> {
         Triple("ಪರ್ವತ", "Parvatha (Mountain)", "⛰️"),
         Triple("ಸಮುದ್ರ", "Samudra (Sea)", "🌊"),
         Triple("ಕುರ್ಚಿ", "Kurchi (Chair)", "🪑"),
-        Triple("ಮೇಜು", "Meju (Table)", "🪵"),
+        Triple("ಮೇಜು", "Meju (Table)", "🍽️"),
         Triple("ಬೆಳಕು", "Belaku (Light)", "💡"),
         Triple("ಬಾಗಿಲು", "Baagilu (Door)", "🚪"),
         Triple("ಕೀಲಿ", "Keeli (Key)", "🔑"),
@@ -1775,7 +1957,7 @@ fun generateArabicBasicWords(): List<LearningItem> {
         Triple("جَبَل", "Jabal (Mountain)", "⛰️"),
         Triple("بَحْر", "Bahr (Sea)", "🌊"),
         Triple("كُرْسِي", "Kursi (Chair)", "🪑"),
-        Triple("طَاوِلَة", "Tawilah (Table)", "🪵"),
+        Triple("طَاوِلَة", "Tawilah (Table)", "🍽️"),
         Triple("ضَوْء", "Daw' (Light)", "💡"),
         Triple("بَاب", "Bab (Door)", "🚪"),
         Triple("مِفْتَاح", "Miftah (Key)", "🔑"),
@@ -2324,7 +2506,7 @@ object LanguageData {
                 LessonCategory.LETTER_WORD to listOf(
                     LearningItem("அ - அம்மா", "Amma (Mother)", "அ அம்மா", "👩"), LearningItem("ஆ - ஆடு", "Aadu (Goat)", "ஆ ஆடு", "🐐"),
                     LearningItem("இ - இலை", "Ilai (Leaf)", "இ இலை", "🍃"), LearningItem("ஈ - ஈட்டி", "Eetti (Spear)", "ஈ ஈட்டி", "🔱"),
-                    LearningItem("உ - உரல்", "Ural (Mortar)", "உ உரல்", "🪵"), LearningItem("ஊ - ஊஞ்சல்", "Oonjal (Swing)", "ஊ ஊஞ்சல்", "🎡"),
+                    LearningItem("உ - உரல்", "Ural (Mortar)", "உ உரல்", "🥣"), LearningItem("ஊ - ஊஞ்சல்", "Oonjal (Swing)", "ஊ ஊஞ்சல்", "🎡"),
                     LearningItem("எ - எலி", "Eli (Rat)", "எ எலி", "🐀"), LearningItem("ஏ - ஏணி", "Aeni (Ladder)", "ஏ ஏணி", "🪜"),
                     LearningItem("ஐ - ஐந்து", "Ainthu (Five)", "ஐ ஐந்து", "5️⃣"), LearningItem("ஒ - ஒட்டகம்", "Ottagam (Camel)", "ஒ ஒட்டகம்", "🐫"),
                     LearningItem("ஓ - ஓடம்", "Odam (Boat)", "ஓ ஓடம்", "⛵"), LearningItem("ஔ - ஔவையார்", "Avvaiyar (Poetess)", "ஔ ஔவையார்", "👵")
@@ -2376,7 +2558,7 @@ object LanguageData {
                 LessonCategory.LETTERS to (hindiVowels + hindiConsonants),
                 LessonCategory.LETTER_WORD to listOf(
                     LearningItem("अ - अनार", "Anaar (Pomegranate)", "अ अनार", "🍎"), LearningItem("आ - आम", "Aam (Mango)", "आ आम", "🥭"),
-                    LearningItem("इ - इमली", "Imli (Tamarind)", "इ इमली", "🪵"), LearningItem("ई - ईख", "Eekh (Sugarcane)", "ई ईख", "🌾"),
+                    LearningItem("इ - इमली", "Imli (Tamarind)", "इ इमली", "🫘"), LearningItem("ई - ईख", "Eekh (Sugarcane)", "ई ईख", "🌾"),
                     LearningItem("उ - उल्लू", "Ullu (Owl)", "उ उल्लू", "🦉"), LearningItem("ऊ - ऊन", "Oon (Wool)", "ऊ ऊन", "🧶"),
                     LearningItem("ऋ - ऋषि", "Rishi (Sage)", "ऋ ऋषि", "🧘‍♂️"), LearningItem("ए - एड़ी", "Aedi (Heel)", "ए एड़ी", "🦶"),
                     LearningItem("ऐ - ऐनक", "Ainak (Spectacles)", "ऐ ऐनक", "👓"), LearningItem("ओ - ओखली", "Okhli (Mortar)", "ओ ओखली", "🥣"),
@@ -2543,7 +2725,7 @@ object LanguageData {
                     LearningItem("ഇ - ഇല", "Ila (Leaf)", "ഇ ഇല", "🍃"), LearningItem("ഈ - ഈച്ച", "Eecha (Housefly)", "ഈ ഈച്ച", "🪰"),
                     LearningItem("ഉ - ഉപ്പ്", "Uppu (Salt)", "ഉ ഉപ്പ്", "🧂"), LearningItem("ഊ - ഊഞ്ഞാൽ", "Oonjaal (Swing)", "ഊ ഊഞ്ഞാൽ", "🎡"),
                     LearningItem("ഋ - ഋഷി", "Rishi (Sage)", "ഋ ഋഷി", "🧘‍♂️"), LearningItem("എ - എലി", "Eli (Rat)", "എ എലി", "🐀"),
-                    LearningItem("ஏ - ஏணி", "Aeni (Ladder)", "ஏ ஏணி", "🪜"), LearningItem("ഐ - ഐസ്", "Ice (Ice)", "ഐ ഐസ്", "🧊"),
+                    LearningItem("ഏ - ഏണി", "Aeni (Ladder)", "ഏ ഏണി", "🪜"), LearningItem("ഐ - ഐസ്", "Ice (Ice)", "ഐ ഐസ്", "🧊"),
                     LearningItem("ഒ - ഒട്ടകം", "Ottakam (Camel)", "ഒ ഒട്ടകം", "🐫"), LearningItem("ഓ - ഓടക്കുഴൽ", "Odakkuzhal (Flute)", "ഓ ഓടക്കുഴൽ", "🪈"),
                     LearningItem("ഔ - ഔഷധം", "Oushadham (Medicine)", "ഔ ഔഷധം", "💊"), LearningItem("അം - അമ്പു", "Ambu (Arrow)", "അം അമ്പു", "🏹"),
                     LearningItem("അഃ - ദുഃഖം", "Dukham (Sorrow)", "അഃ ദുഃഖം", "😢")

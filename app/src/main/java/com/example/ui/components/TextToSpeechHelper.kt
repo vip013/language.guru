@@ -8,6 +8,201 @@ import java.util.Locale
 import kotlinx.coroutines.*
 import kotlin.coroutines.resume
 
+enum class SpeechContentType {
+    LETTER,
+    SOUND,
+    WORD,
+    SENTENCE
+}
+
+object LanguagePronunciationManager {
+    fun getLocaleForLanguage(langCode: String): Locale {
+        return when (langCode) {
+            "te" -> Locale("te", "IN")
+            "ta" -> Locale("ta", "IN")
+            "hi" -> Locale("hi", "IN")
+            "ar" -> Locale("ar", "SA")
+            "kn" -> Locale("kn", "IN")
+            "ml" -> Locale("ml", "IN")
+            "bn" -> Locale("bn", "IN")
+            "mr" -> Locale("mr", "IN")
+            "gu" -> Locale("gu", "IN")
+            else -> Locale("en", "US")
+        }
+    }
+
+    fun resolveTextToSpeak(
+        text: String,
+        language: String,
+        type: SpeechContentType,
+        pronunciationText: String = ""
+    ): String {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return ""
+
+        return when (language) {
+            "hi" -> {
+                when (type) {
+                    SpeechContentType.LETTER -> {
+                        when (trimmed) {
+                            "अ" -> "अ"
+                            "आ" -> "आ"
+                            "इ" -> "इ"
+                            "ई" -> "ई"
+                            "उ" -> "उ"
+                            "ऊ" -> "ऊ"
+                            "ऋ" -> "ऋ"
+                            "ए" -> "ए"
+                            "ऐ" -> "ऐ"
+                            "ओ" -> "ओ"
+                            "औ" -> "औ"
+                            "अं" -> "अंग"
+                            "अः" -> "अह"
+                            "र" -> "र"
+                            else -> trimmed
+                        }
+                    }
+                    SpeechContentType.SOUND -> {
+                        if (pronunciationText.isNotBlank()) pronunciationText else trimmed
+                    }
+                    SpeechContentType.WORD, SpeechContentType.SENTENCE -> {
+                        trimmed
+                    }
+                }
+            }
+            "ar" -> {
+                val canonicalLetterNames = mapOf(
+                    "ا" to "أَلِفْ", "alif" to "أَلِفْ",
+                    "ب" to "بَاءْ", "baa" to "بَاءْ",
+                    "ت" to "تَاءْ", "taa" to "تَاءْ",
+                    "ث" to "ثَاءْ", "thaa" to "ثَاءْ",
+                    "ج" to "جِيمْ", "j" to "جِيمْ", "jeem" to "جِيمْ", "ja" to "جِيمْ", "جيم" to "جِيمْ", "جِيمْ" to "جِيمْ",
+                    "ح" to "حَاءْ", "haa" to "حَاءْ",
+                    "خ" to "خَاءْ", "khaa" to "خَاءْ",
+                    "د" to "دَالْ", "daal" to "دَالْ",
+                    "ذ" to "ذَالْ", "thaal" to "ذَالْ",
+                    "ر" to "رَاءْ", "raa" to "رَاءْ",
+                    "ز" to "زَايْ", "zay" to "زَايْ",
+                    "س" to "سِينْ", "seen" to "سِينْ",
+                    "ش" to "شِينْ", "sheen" to "شِينْ",
+                    "ص" to "صَادْ", "saad" to "صَادْ",
+                    "ض" to "ضَادْ", "daad" to "ضَادْ",
+                    "ط" to "طَاءْ",
+                    "ظ" to "ظَاءْ", "zaa" to "ظَاءْ",
+                    "ع" to "عَيْنْ", "ayn" to "عَيْنْ",
+                    "غ" to "غَيْنْ", "ghayn" to "غَيْنْ",
+                    "ف" to "فَاءْ", "faa" to "فَاءْ",
+                    "ق" to "قَافْ", "qaaf" to "قَافْ",
+                    "ك" to "كَافْ", "kaaf" to "كَافْ",
+                    "ل" to "لَامْ", "laam" to "لَامْ",
+                    "م" to "مِيمْ", "meem" to "مِيمْ",
+                    "ن" to "نُونْ", "noon" to "نُونْ",
+                    "هـ" to "هَاءْ", "ه" to "هَاءْ",
+                    "و" to "وَاوْ", "waw" to "وَاوْ",
+                    "ي" to "يَاءْ", "yaa" to "يَاءْ",
+                    "ء" to "هَمْزَة"
+                )
+
+                val sounds = mapOf(
+                    "ا" to "أْ", "ب" to "بْ", "ت" to "تْ", "ث" to "ثْ",
+                    "ج" to "جْ", "j" to "جْ", "jeem" to "جْ", "ح" to "حْ", "خ" to "خْ", "د" to "دْ",
+                    "ذ" to "ذْ", "ر" to "رْ", "ز" to "زْ", "س" to "سْ",
+                    "ش" to "شْ", "ص" to "صْ", "ض" to "ضْ", "ط" to "طْ",
+                    "ظ" to "ظْ", "ع" to "عْ", "غ" to "غْ", "ف" to "فْ",
+                    "ق" to "قْ", "ك" to "كْ", "ل" to "لْ", "م" to "مْ",
+                    "ن" to "نْ", "هـ" to "هْ", "ه" to "هْ", "و" to "وْ", "ي" to "يْ"
+                )
+
+                when (type) {
+                    SpeechContentType.LETTER -> {
+                        canonicalLetterNames[trimmed]
+                            ?: canonicalLetterNames[trimmed.lowercase()]
+                            ?: trimmed.replace("ـ", "")
+                    }
+                    SpeechContentType.SOUND -> {
+                        sounds[trimmed]
+                            ?: sounds[trimmed.lowercase()]
+                            ?: trimmed
+                    }
+                    SpeechContentType.WORD, SpeechContentType.SENTENCE -> {
+                        if (trimmed == "j" || trimmed == "J" || trimmed == "jeem" || trimmed == "ج" || trimmed == "جيم") {
+                            "جِيمْ"
+                        } else {
+                            trimmed.replace(":", " ، ")
+                                .replace("：", " ، ")
+                                .replace("ـ", "")
+                        }
+                    }
+                }
+            }
+            "ta" -> {
+                when (type) {
+                    SpeechContentType.LETTER -> {
+                        when (trimmed) {
+                            "க்" -> "இக்"
+                            "ங்" -> "இங்"
+                            "ச்" -> "இச்"
+                            "ஞ்" -> "இஞ்"
+                            "ட்" -> "இட்"
+                            "ண்" -> "இண்"
+                            "த்" -> "இத்"
+                            "ந்" -> "இந்"
+                            "ப்" -> "இப்"
+                            "ம்" -> "இம்"
+                            "ய்" -> "இய்"
+                            "ர்" -> "இர்"
+                            "ல்" -> "இல்"
+                            "வ்" -> "இவ்"
+                            "ழ்" -> "இழ்"
+                            "ள்" -> "இள்"
+                            "ற்" -> "இற்"
+                            "ன்" -> "இன்"
+                            "ஃ" -> "அக்கு"
+                            else -> trimmed
+                        }
+                    }
+                    else -> trimmed
+                }
+            }
+            "te" -> {
+                when (type) {
+                    SpeechContentType.LETTER -> {
+                        when (trimmed) {
+                            "ఱ" -> "బండిరా"
+                            "అః" -> "అహా"
+                            else -> trimmed
+                        }
+                    }
+                    else -> trimmed
+                }
+            }
+            "kn" -> {
+                when (type) {
+                    SpeechContentType.LETTER -> {
+                        when (trimmed) {
+                            "ಅಃ" -> "ಅಹ"
+                            else -> trimmed
+                        }
+                    }
+                    else -> trimmed
+                }
+            }
+            "ml" -> {
+                when (type) {
+                    SpeechContentType.LETTER -> {
+                        when (trimmed) {
+                            "അഃ" -> "അഹം"
+                            else -> trimmed
+                        }
+                    }
+                    else -> trimmed
+                }
+            }
+            else -> trimmed
+        }
+    }
+}
+
 class TextToSpeechHelper(
     private val context: Context,
     private val onInitComplete: (Boolean) -> Unit = {}
@@ -181,146 +376,68 @@ class TextToSpeechHelper(
     }
 
     fun speak(text: String, subtitle: String = "", langCode: String, speed: Float, isVoiceOn: Boolean, isPoem: Boolean = false, voiceCharacter: String = "bear", onDone: () -> Unit = {}) {
+        val type = if (isPoem) {
+            SpeechContentType.SENTENCE
+        } else if (text.trim().length <= 2 && !text.contains(" ") && !text.contains("-")) {
+            SpeechContentType.LETTER
+        } else {
+            SpeechContentType.WORD
+        }
+        speakContent(
+            text = text,
+            language = langCode,
+            type = type,
+            pronunciationText = subtitle,
+            speed = speed,
+            isVoiceOn = isVoiceOn,
+            isPoem = isPoem,
+            voiceCharacter = voiceCharacter,
+            onDone = onDone
+        )
+    }
+
+    fun speakContent(
+        text: String,
+        language: String,
+        type: SpeechContentType = SpeechContentType.WORD,
+        pronunciationText: String = "",
+        locale: Locale? = null,
+        speed: Float = 1.0f,
+        isVoiceOn: Boolean = true,
+        isPoem: Boolean = false,
+        voiceCharacter: String = "bear",
+        onDone: () -> Unit = {}
+    ) {
         poemJob?.cancel() // Cancel any ongoing poem recitation immediately
-        
+
         val cleanedText = stripEmojis(text)
-        
+        val textToSpeak = LanguagePronunciationManager.resolveTextToSpeak(
+            text = cleanedText,
+            language = language,
+            type = type,
+            pronunciationText = pronunciationText
+        )
+
         if (progressManager.useWebSpeechApi) {
             if (webSpeechHelper == null) {
                 initWebSpeechHelper()
             }
             if (isVoiceOn) {
-                webSpeechHelper?.speak(cleanedText, langCode, speed, onDone)
+                webSpeechHelper?.speak(textToSpeak, language, speed, onDone)
             } else {
                 onDone()
             }
             return
         }
 
-        var textToSpeak = cleanedText
-        if (langCode == "te") {
-            // Apply custom TTS fixes for Telugu isolated pronunciation issues
-            if (textToSpeak == "ఆ") {
-                textToSpeak = "ఆఆ"
-            } else if (textToSpeak == "ఈ") {
-                textToSpeak = "ఈఈ"
-            } else if (textToSpeak == "ఊ") {
-                textToSpeak = "ఊఊ"
-            } else if (textToSpeak == "ఏ") {
-                textToSpeak = "ఏఏ"
-            } else if (textToSpeak == "ఓ") {
-                textToSpeak = "ఓఓ"
-            } else if (textToSpeak == "ఒ") {
-                textToSpeak = "ఒ"
-            } else if (textToSpeak == "ఱ") {
-                textToSpeak = "బండిరా"
-            }
-            
-            // Fix "అః" (aha) and "ఒ" in composite strings for perfect pronunciation
-            if (textToSpeak.contains("అః")) {
-                textToSpeak = textToSpeak.replace("అః", "అహా")
-            }
-            if (textToSpeak.startsWith("ఒ ")) {
-                textToSpeak = textToSpeak.replaceFirst("ఒ ", "ఒ ")
-            }
-        } else if (langCode == "ta") {
-            // Apply custom TTS fixes for Tamil letters to speak clearly and naturally
-            when (textToSpeak) {
-                "க்" -> textToSpeak = "இக்"
-                "ங்" -> textToSpeak = "இங்"
-                "ச்" -> textToSpeak = "இச்"
-                "ஞ்" -> textToSpeak = "இஞ்"
-                "ட்" -> textToSpeak = "இட்"
-                "ண்" -> textToSpeak = "இண்"
-                "த்" -> textToSpeak = "இத்"
-                "ந்" -> textToSpeak = "இந்"
-                "ப்" -> textToSpeak = "இப்"
-                "ம்" -> textToSpeak = "இம்"
-                "ய்" -> textToSpeak = "இய்"
-                "ர்" -> textToSpeak = "இர்"
-                "ல்" -> textToSpeak = "இல்"
-                "வ்" -> textToSpeak = "இவ்"
-                "ழ்" -> textToSpeak = "இழ்"
-                "ள்" -> textToSpeak = "இள்"
-                "ற்" -> textToSpeak = "இற்"
-                "ன்" -> textToSpeak = "இன்"
-                "ஆ" -> textToSpeak = "ஆஆ"
-                "ஈ" -> textToSpeak = "ஈஈ"
-                "ஊ" -> textToSpeak = "ஊஊ"
-                "ஏ" -> textToSpeak = "ஏஏ"
-                "ஓ" -> textToSpeak = "ஓஓ"
-                "ஃ" -> textToSpeak = "அக்கு"
-            }
-        } else if (langCode == "hi") {
-            // Apply custom TTS fixes for Hindi letters to speak clearly and naturally
-            when (textToSpeak) {
-                "आ" -> textToSpeak = "आआ"
-                "ई" -> textToSpeak = "ईई"
-                "ऊ" -> textToSpeak = "ऊऊ"
-                "ऋ" -> textToSpeak = "री"
-                "ए" -> textToSpeak = "एए"
-                "ऐ" -> textToSpeak = "ऐऐ"
-                "ओ" -> textToSpeak = "ओओ"
-                "औ" -> textToSpeak = "औऔ"
-                "अः" -> textToSpeak = "अहा"
-            }
-            if (textToSpeak.contains("अः")) {
-                textToSpeak = textToSpeak.replace("अः", "अहा")
-            }
-        } else if (langCode == "ar") {
-            var tempText = textToSpeak.trim()
-            
-            // Map raw isolated Arabic letters to their clear pronunciation word names
-            val rawLetterNames = mapOf(
-                "ا" to "أَلِف", "ب" to "بَا", "ت" to "تَا", "ث" to "ثَا",
-                "ج" to "جِيم", "ح" to "حَا", "خ" to "خَا", "د" to "دَال",
-                "ذ" to "ذَال", "ر" to "رَا", "ز" to "زَاي", "س" to "سِين",
-                "ش" to "شِين", "ص" to "صَاد", "ض" to "ضَاد", "ط" to "طَا",
-                "ظ" to "ظَا", "ع" to "عَيْن", "غ" to "غَيْن", "ف" to "فَا",
-                "ق" to "قَاف", "ك" to "كَاف", "ل" to "لَام", "م" to "مِيم",
-                "ن" to "نُون", "هـ" to "هَا", "ه" to "هَا", "و" to "وَاو", "ي" to "يَا"
-            )
-            
-            if (rawLetterNames.containsKey(tempText)) {
-                tempText = rawLetterNames[tempText] ?: tempText
-            } else {
-                // Smooth out the glottal stops in letter names if they appear within larger compound strings
-                tempText = tempText.replace("أَلِفْ", "أَلِف").replace("أَلِف", "أَلِف")
-                tempText = tempText.replace("بَاءْ", "بَا").replace("بَاء", "بَا")
-                tempText = tempText.replace("تَاءْ", "تَا").replace("تَاء", "تَا")
-                tempText = tempText.replace("ثَاءْ", "ثَا").replace("ثَاء", "ثَا")
-                tempText = tempText.replace("حَاءْ", "حَا").replace("حَاء", "حَا")
-                tempText = tempText.replace("خَاءْ", "خَا").replace("خَاء", "خَا")
-                tempText = tempText.replace("رَاءْ", "رَا").replace("رَاء", "رَا")
-                tempText = tempText.replace("طَاءْ", "طَا").replace("طَاء", "طَا")
-                tempText = tempText.replace("ظَاءْ", "ظَا").replace("ظَاء", "ظَا")
-                tempText = tempText.replace("فَاءْ", "فَا").replace("فَاء", "فَا")
-                tempText = tempText.replace("هَاءْ", "هَا").replace("هَاء", "هَا")
-                tempText = tempText.replace("يَاءْ", "يَا").replace("يَاء", "يَا")
-            }
-            
-            // Replace colons (from letter-word matching like "أَلِفْ: أَسَدْ") with an Arabic comma (،) and a space to force a natural breathing pause.
-            tempText = tempText.replace(":", " ، ")
-            tempText = tempText.replace("：", " ، ")
-            
-            // Strip the decorative Kashida/Tatweel (ـ) character which can confuse speech synthesis algorithms.
-            tempText = tempText.replace("ـ", "")
-            
-            // Strip any trailing or intermediate Sukun (ْ) which can cause harsh stops or clipped voice output on some engines.
-            tempText = tempText.replace("ْ", "")
-            
-            textToSpeak = tempText
-        }
-        
         if (isVoiceOn) {
-            // Volume check to alert user if their device volume is turned to 0
             try {
                 val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
                 val currentVolume = audioManager?.getStreamVolume(android.media.AudioManager.STREAM_MUSIC) ?: 0
                 if (currentVolume == 0) {
                     android.widget.Toast.makeText(
                         context,
-                        "⚠️ Sound is muted! Please turn up your media volume.\n⚠️ సౌండ్ ఆఫ్‌లో ఉంది! దయచేసి మీ ఫోన్ వాల్యూమ్ పెంచండి.",
+                        "⚠️ Sound is muted! Please turn up your media volume.",
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -328,34 +445,34 @@ class TextToSpeechHelper(
                 Log.e("TTS", "Error checking audio stream volume", e)
             }
         }
-        
+
         if (!isInitialized) {
             Log.w("TTS", "System TTS is not initialized. Falling back to WebSpeechTtsHelper.")
             if (webSpeechHelper == null) {
                 initWebSpeechHelper()
             }
             if (isVoiceOn) {
-                webSpeechHelper?.speak(textToSpeak, langCode, speed, onDone)
+                webSpeechHelper?.speak(textToSpeak, language, speed, onDone)
             } else {
                 onDone()
             }
             return
         }
-        
+
         if (!isVoiceOn) {
             onDone()
             return
         }
 
-        val locale = getLocaleForLangCode(langCode)
-        val result = tts?.setLanguage(locale)
+        val targetLocale = locale ?: LanguagePronunciationManager.getLocaleForLanguage(language)
+        val result = tts?.setLanguage(targetLocale)
         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-            Log.w("TTS", "Language $langCode is not supported or missing voice data. Falling back to WebSpeechTtsHelper.")
+            Log.w("TTS", "Language $language is not supported or missing voice data. Falling back to WebSpeechTtsHelper.")
             if (webSpeechHelper == null) {
                 initWebSpeechHelper()
             }
             if (isVoiceOn) {
-                webSpeechHelper?.speak(textToSpeak, langCode, speed, onDone)
+                webSpeechHelper?.speak(textToSpeak, language, speed, onDone)
             } else {
                 onDone()
             }
@@ -366,7 +483,7 @@ class TextToSpeechHelper(
                 val availableVoices = tts?.voices
                 if (!availableVoices.isNullOrEmpty()) {
                     val bestVoice = availableVoices.asSequence()
-                        .filter { it.locale.language == locale.language }
+                        .filter { it.locale.language == targetLocale.language }
                         .sortedWith(compareByDescending<android.speech.tts.Voice> { 
                             if (voiceCharacter == "guru") {
                                 // Prefer network-based high-quality neural/WaveNet voices for realistic feeling
@@ -416,7 +533,6 @@ class TextToSpeechHelper(
         if (isPoem) {
             this.onSpeechDoneCallback = null // Handled internally per phrase
             poemJob = mainScope.launch {
-                // Split by commas, question marks, exclamation marks, periods, semicolons, and newlines
                 val phrases = text.split(Regex("[,?\\n.!;:]+"))
                     .map { it.trim() }
                     .filter { it.isNotEmpty() }
@@ -430,7 +546,6 @@ class TextToSpeechHelper(
                     val phrase = phrases[index]
                     val note = melodyCycle[index % melodyCycle.size]
                     
-                    // Oscillating pitch and pacing to create a musical cadence
                     val currentPitch = if (voiceCharacter == "motu") note.pitch + 0.45f else note.pitch
                     val currentSpeed = if (voiceCharacter == "motu") {
                         (speed * note.speedFactor * 1.15f).coerceIn(0.70f, 1.20f)
@@ -440,7 +555,6 @@ class TextToSpeechHelper(
 
                     try {
                         speakPhrase(phrase, currentPitch, currentSpeed)
-                        // Dynamic musical pause between verses
                         delay(note.pauseMs)
                     } catch (e: CancellationException) {
                         break
@@ -457,26 +571,25 @@ class TextToSpeechHelper(
 
         val isSentence = textToSpeak.contains(" ") || textToSpeak.contains("\n")
 
-        // Adjust speed dynamically based on character - higher multipliers for native clarity
         var adjustedSpeed = if (voiceCharacter == "motu") {
             if (isSentence) {
-                (speed * 0.88f).coerceIn(0.70f, 1.15f) // Comical but perfectly spoken for Motu
+                (speed * 0.88f).coerceIn(0.70f, 1.15f)
             } else {
                 (speed * 0.95f).coerceIn(0.75f, 1.20f)
             }
         } else if (voiceCharacter == "guru") {
             if (isSentence) {
-                (speed * 0.92f).coerceIn(0.80f, 1.15f) // Highly realistic natural teacher speed
+                (speed * 0.92f).coerceIn(0.80f, 1.15f)
             } else {
                 (speed * 0.96f).coerceIn(0.85f, 1.20f)
             }
         } else {
             if (isSentence) {
-                (speed * 0.85f).coerceIn(0.70f, 1.10f) // Highly clear, majestic and native pacing
-            } else if (langCode == "ar") {
-                (speed * 0.88f).coerceIn(0.75f, 1.15f) // Clear precise classic Arabic pronunciation pace
+                (speed * 0.85f).coerceIn(0.70f, 1.10f)
+            } else if (language == "ar") {
+                (speed * 0.88f).coerceIn(0.75f, 1.15f)
             } else {
-                if (isLongPronunciation(textToSpeak, subtitle)) {
+                if (isLongPronunciation(textToSpeak, pronunciationText)) {
                     (speed * 0.85f).coerceIn(0.70f, 1.10f)
                 } else {
                     (speed * 0.92f).coerceIn(0.80f, 1.25f)
@@ -486,15 +599,14 @@ class TextToSpeechHelper(
 
         tts?.setSpeechRate(adjustedSpeed)
         
-        // Pitch tuning: Clear deep friendly pitch (0.95f) for bear, sweet professional pitch (1.02f) for Guru, standard natural pitch (1.0f) for Arabic, bubbly comical energetic pitch (1.15f) for Motu voice
         val pitch = if (voiceCharacter == "motu") {
             1.15f
         } else if (voiceCharacter == "guru") {
-            1.02f // Extremely warm, realistic, professional voice pitch
-        } else if (langCode == "ar") {
+            1.02f
+        } else if (language == "ar") {
             1.0f
         } else {
-            0.95f // Brightened and elevated to keep it extremely friendly, warm, and highly intelligible
+            0.95f
         }
         tts?.setPitch(pitch)
 
@@ -509,7 +621,7 @@ class TextToSpeechHelper(
                 initWebSpeechHelper()
             }
             if (isVoiceOn) {
-                webSpeechHelper?.speak(textToSpeak, langCode, speed, onDone)
+                webSpeechHelper?.speak(textToSpeak, language, speed, onDone)
             } else {
                 onDone()
             }

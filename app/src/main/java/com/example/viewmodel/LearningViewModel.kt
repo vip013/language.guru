@@ -25,6 +25,7 @@ import com.example.data.englishBodyParts
 import com.example.data.ProgressManager
 import com.example.data.actualTitle
 import com.example.data.localizeItem
+import com.example.data.CentralizedContentRepository
 import com.example.ui.components.SoundEffectsHelper
 import com.example.ui.components.TextToSpeechHelper
 import kotlinx.coroutines.Job
@@ -515,11 +516,7 @@ class LearningViewModel(application: Application) : AndroidViewModel(application
         _avatarAction.value = "thinking"
         
         val code = _selectedLanguage.value?.code ?: "en"
-        val text = if (code == "te") {
-            "చింతించకు! మళ్లీ ప్రయత్నిద్దాం. '$word' ని ఇంకోసారి ప్రాక్టీస్ చేయి!"
-        } else {
-            "Don't worry! Let's try '$word' again together!"
-        }
+        val text = CentralizedContentRepository.getLocalizedUiString("encourage_mistake", code, word)
         speakCustomText(text)
     }
 
@@ -532,11 +529,7 @@ class LearningViewModel(application: Application) : AndroidViewModel(application
         _avatarAction.value = "happy"
         
         val code = _selectedLanguage.value?.code ?: "en"
-        val text = if (code == "te") {
-            "చాలా బాగుంది! నువ్వు '$word' ని సరిగ్గా చెప్పావు!"
-        } else {
-            "Awesome! You got '$word' perfectly right!"
-        }
+        val text = CentralizedContentRepository.getLocalizedUiString("encourage_success", code, word)
         speakCustomText(text)
     }
 
@@ -713,25 +706,7 @@ class LearningViewModel(application: Application) : AndroidViewModel(application
     fun getLessonItems(): List<LearningItem> {
         val config = _selectedLanguage.value ?: return emptyList()
         val category = _activeCategory.value ?: return emptyList()
-        val items = config.lessons[category]
-        if (items != null) return items
-
-        // Fallback for languages that do not have custom lists for these new categories
-        val isTe = config.code == "te"
-        val baseList = when (category) {
-            LessonCategory.STATES_CAPITALS -> if (isTe) teluguStatesAndCapitals else englishStatesAndCapitals
-            LessonCategory.NATIONAL_SYMBOLS -> if (isTe) teluguNationalSymbols else englishNationalSymbols
-            LessonCategory.RELATIONSHIPS -> if (isTe) teluguRelationships else englishRelationships
-            LessonCategory.FOODS -> if (isTe) teluguFoods else englishFoods
-            LessonCategory.FRUITS_FLOWERS -> if (isTe) teluguFruitsAndFlowers else englishFruitsAndFlowers
-            LessonCategory.BODY_PARTS -> if (isTe) teluguBodyParts else englishBodyParts
-            else -> emptyList()
-        }
-
-        if (config.code != "te" && config.code != "en") {
-            return baseList.map { item -> localizeItem(item, category, config.code) }
-        }
-        return baseList
+        return CentralizedContentRepository.getLocalizedContent(category, config.code)
     }
 
     fun getCurrentItem(): LearningItem? {
@@ -748,17 +723,30 @@ class LearningViewModel(application: Application) : AndroidViewModel(application
         val lang = _selectedLanguage.value ?: return
         val isPoem = _activeCategory.value == LessonCategory.POEMS && lang.code != "te"
 
-        val textToSpeak = item.voiceText
+        val textToSpeak = item.voiceText.ifEmpty { item.display }
 
         val activeChar = if (_activeCategory.value == LessonCategory.VEGETABLES) "motu" else _voiceCharacter.value
 
+        val contentType = when (_activeCategory.value) {
+            LessonCategory.LETTERS -> com.example.ui.components.SpeechContentType.LETTER
+            LessonCategory.POEMS -> com.example.ui.components.SpeechContentType.SENTENCE
+            else -> {
+                if (item.display.trim().length <= 2 && !item.display.contains(" ") && !item.display.contains("-")) {
+                    com.example.ui.components.SpeechContentType.LETTER
+                } else {
+                    com.example.ui.components.SpeechContentType.WORD
+                }
+            }
+        }
+
         _avatarIsSpeaking.value = true
         _avatarText.value = textToSpeak
-        // Speak slowly and clearly via TTS immediately
-        ttsHelper?.speak(
+        // Speak clearly via TTS with explicit language-aware letter vs word type
+        ttsHelper?.speakContent(
             text = textToSpeak,
-            subtitle = item.subtitle,
-            langCode = lang.code,
+            language = lang.code,
+            type = contentType,
+            pronunciationText = item.subtitle,
             speed = _voiceSpeed.value,
             isVoiceOn = _isVoiceOn.value,
             isPoem = isPoem,
@@ -771,8 +759,12 @@ class LearningViewModel(application: Application) : AndroidViewModel(application
         )
     }
 
-    fun speakCustomText(text: String, onDone: () -> Unit = {}) {
-        val isMuted = _isAvatarMuted.value
+    fun speakCustomText(text: String, forceAudio: Boolean = false, onDone: () -> Unit = {}) {
+        if (forceAudio) {
+            _isAvatarMuted.value = false
+            _isVoiceOn.value = true
+        }
+        val isMuted = _isAvatarMuted.value && !forceAudio
         _avatarIsSpeaking.value = true
         val cleanText = text.replace("**", "")
             .replace("*", "")
@@ -781,7 +773,15 @@ class LearningViewModel(application: Application) : AndroidViewModel(application
             .replace("`", "")
             .replace("#", "")
             .replace("~", "")
+            .trim()
         _avatarText.value = cleanText
+
+        if (cleanText.isEmpty()) {
+            _avatarIsSpeaking.value = false
+            onDone()
+            return
+        }
+
         if (isMuted) {
             viewModelScope.launch {
                 val delayMs = (cleanText.length * 85L).coerceIn(1200L, 4000L)
@@ -791,22 +791,35 @@ class LearningViewModel(application: Application) : AndroidViewModel(application
                 onDone()
             }
         } else {
-            val lang = _selectedLanguage.value ?: return
+            val langCode = _selectedLanguage.value?.code ?: progressManager.selectedLanguage.ifEmpty { "en" }
             val activeChar = _voiceCharacter.value
-            ttsHelper?.speak(
-                text = text,
-                subtitle = "",
-                langCode = lang.code,
-                speed = _voiceSpeed.value,
-                isVoiceOn = _isVoiceOn.value,
-                isPoem = false,
-                voiceCharacter = activeChar,
-                onDone = {
-                    _avatarIsSpeaking.value = false
-                    _avatarText.value = ""
-                    onDone()
+            viewModelScope.launch {
+                if (ttsHelper == null) {
+                    ttsHelper = TextToSpeechHelper(getApplication()) { success ->
+                        _isTtsReady.value = true
+                    }
                 }
-            )
+                var waitCount = 0
+                while (ttsHelper?.isReady() != true && waitCount < 15) {
+                    delay(100)
+                    waitCount++
+                }
+                ttsHelper?.speakContent(
+                    text = cleanText,
+                    language = langCode,
+                    type = com.example.ui.components.SpeechContentType.SENTENCE,
+                    pronunciationText = "",
+                    speed = _voiceSpeed.value,
+                    isVoiceOn = true,
+                    isPoem = false,
+                    voiceCharacter = activeChar,
+                    onDone = {
+                        _avatarIsSpeaking.value = false
+                        _avatarText.value = ""
+                        onDone()
+                    }
+                )
+            }
         }
     }
 
@@ -1009,6 +1022,16 @@ class LearningViewModel(application: Application) : AndroidViewModel(application
         _isAvatarMuted.value = newValue
         progressManager.isAvatarMuted = newValue
         playClickSound()
+    }
+
+    fun setVoiceOn(value: Boolean) {
+        _isVoiceOn.value = value
+        progressManager.isVoiceOn = value
+    }
+
+    fun setAvatarMuted(value: Boolean) {
+        _isAvatarMuted.value = value
+        progressManager.isAvatarMuted = value
     }
 
     fun toggleAvatarGender() {

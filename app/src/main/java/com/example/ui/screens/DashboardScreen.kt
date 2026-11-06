@@ -2444,7 +2444,7 @@ fun LanguageMascotBadge(langCode: String, modifier: Modifier = Modifier) {
         "hi" -> Triple("अ", "🪷", Color(0xFF43A047))  // Hindi: Lotus / Green
         "ar" -> Triple("أ", "🐪", Color(0xFF8E24AA))  // Arabic: Camel / Purple
         "kn" -> Triple("ಅ", "🍃", Color(0xFF00897B)) // Kannada: Leaf / Teal
-        "ml" -> Triple("అ", "🌴", Color(0xFFFFB300)) // Malayalam: Palm / Gold
+        "ml" -> Triple("അ", "🌴", Color(0xFFFFB300)) // Malayalam: Palm / Gold
         "bn" -> Triple("অ", "🐯", Color(0xFFE65100)) // Bengali: Tiger / Orange
         "mr" -> Triple("अ", "🦁", Color(0xFF8D6E63)) // Marathi: Lion / Brown
         "gu" -> Triple("અ", "🪔", Color(0xFF00ACC1)) // Gujarati: Diya / Cyan
@@ -2477,101 +2477,29 @@ private data class QuickActionItem(
     val onClick: () -> Unit
 )
 
-fun getLocalizedStreakTitle(langCode: String): String = when (langCode) {
-    "te" -> "రోజువారీ సాధన స్ట్రీక్! 🔥"
-    "ta" -> "தினசரி பயிற்சி தொடர்ச்சி! 🔥"
-    "hi" -> "दैनिक अभ्यास सिलसिला! 🔥"
-    "kn" -> "ದೈನಂದಿನ ಅಭ್ಯಾಸದ ಸ್ಟ್ರೀಕ್! 🔥"
-    "ml" -> "ദിനചര്യ പരിശീലനം! 🔥"
-    else -> "Daily Practice Streak! 🔥"
-}
+fun getLocalizedStreakTitle(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("streak_title", langCode)
 
-fun getLocalizedStreakMessage(dailyStreak: Int, langCode: String): String = when (langCode) {
-    "te" -> "నువ్వు వరుసగా $dailyStreak రోజులు సాధన చేశావు బంగారం! ఇలాగే ప్రతిరోజూ కొత్త విషయాలు నేర్చుకో! 🚀✨"
-    "ta" -> "நீங்கள் தொடர்ந்து $dailyStreak நாட்கள் பயிற்சி செய்துள்ளீர்கள்! தினமும் புதிய விஷயங்களைக் கற்றுக்கொள்ளுங்கள்! 🚀✨"
-    "hi" -> "आपने लगातार $dailyStreak दिनों तक अभ्यास किया है! हर दिन नई चीजें सीखते रहें! 🚀✨"
-    "kn" -> "ನೀವು ಸತತವಾಗಿ $dailyStreak ದಿನಗಳ ಕಾಲ ಅಭ್ಯಾಸ ಮಾಡಿದ್ದೀರಿ! ಪ್ರತಿದิน ಹೊಸ ವಿಷಯಗಳನ್ನು ಕಲಿಯಿರಿ! 🚀✨"
-    "ml" -> "നിങ്ങൾ തുടർച്ചയായി $dailyStreak ദിവസങ്ങൾ പരിശീലിച്ചു! ദിവസവും പുതിയ കാര്യങ്ങൾ പഠിക്കുക! 🚀✨"
-    else -> "You have practiced for $dailyStreak days in a row! Keep going every day to build a magical learning habit! 🚀✨"
-}
+fun getLocalizedStreakMessage(dailyStreak: Int, langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("streak_message", langCode, dailyStreak.toString())
 
-fun getLocalizedSelectLesson(langCode: String): String = when (langCode) {
-    "te" -> "పాఠాన్ని ఎంచుకోండి! 🎓"
-    "ta" -> "பாடத்தைத் தேர்வு செய்க! 🎓"
-    "hi" -> "पाठ चुनें! 🎓"
-    "ar" -> "اختر درساً! 🎓"
-    "kn" -> "ಪಾಠವನ್ನು ಆರಿಸಿ! 🎓"
-    "ml" -> "പാಠം തിരഞ്ഞെടുക്കുക! 🎓"
-    "bn" -> "একটি পাঠ নির্বাচন করুন! 🎓"
-    "mr" -> "पाठ निवडा! 🎓"
-    "gu" -> "પાઠ પસંદ કરો! 🎓"
-    else -> "Select a Lesson! 🎓"
-}
+fun getLocalizedSelectLesson(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("select_lesson", langCode)
 
-fun getLocalizedPlay(langCode: String): String = when (langCode) {
-    "te" -> "నేర్చుకో 🌟"
-    "ta" -> "விளையாடு 🌟"
-    "hi" -> "खेलो 🌟"
-    "ar" -> "ابدأ 🌟"
-    "kn" -> "ಕಲಿ 🌟"
-    "ml" -> "പഠിക്കുക 🌟"
-    "bn" -> "খেলো 🌟"
-    "mr" -> "शिका 🌟"
-    "gu" -> "રમો 🌟"
-    else -> "Play 🌟"
-}
+fun getLocalizedPlay(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("play_lesson", langCode)
 
-fun getHomeworkTitle(langCode: String): String = when (langCode) {
-    "te" -> "హోంవర్క్ 📚"
-    "ta" -> "வீட்டுப்பாடம் 📚"
-    "hi" -> "गृहकार्य 📚"
-    "ar" -> "الواجب المدرسي 📚"
-    "kn" -> "ಮನೆಕೆಲಸ 📚"
-    "ml" -> "ഹോംവർക്ക് 📚"
-    "bn" -> "বাড়ির কাজ 📚"
-    "mr" -> "गृहपाठ 📚"
-    "gu" -> "ગૃહકાર્ય 📚"
-    else -> "Homework 📚"
-}
+fun getHomeworkTitle(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("homework_helper", langCode)
 
-fun getGamesTitle(langCode: String): String = when (langCode) {
-    "te" -> "ఆటలు 🎮"
-    "ta" -> "விளையாட்டுகள் 🎮"
-    "hi" -> "खेल 🎮"
-    "ar" -> "ألعاب 🎮"
-    "kn" -> "ಆಟಗಳು 🎮"
-    "ml" -> "കളികൾ 🎮"
-    "bn" -> "খেলাধুলা 🎮"
-    "mr" -> "खेळ 🎮"
-    "gu" -> "રમતો 🎮"
-    else -> "Games 🎮"
-}
+fun getGamesTitle(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("mini_games", langCode)
 
-fun getAiTeacherTitle(langCode: String): String = when (langCode) {
-    "te" -> "AI గురువు 🤖"
-    "ta" -> "AI ஆசிரியர் 🤖"
-    "hi" -> "AI शिक्षक 🤖"
-    "ar" -> "معلم الذكاء الاصطناعي 🤖"
-    "kn" -> "AI ಶಿಕ್ಷಕ 🤖"
-    "ml" -> "AI ടീച്ചർ 🤖"
-    "bn" -> "এআই শিক্ষক 🤖"
-    "mr" -> "एआय शिक्षक 🤖"
-    "gu" -> "AI શિક્ષક 🤖"
-    else -> "AI Teacher 🤖"
-}
+fun getAiTeacherTitle(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("ai_teacher", langCode)
 
-fun getCameraTitle(langCode: String): String = when (langCode) {
-    "te" -> "కెమెరా లెర్నింగ్ 📷"
-    "ta" -> "கேமரா கற்றல் 📷"
-    "hi" -> "कैमरा लर्निंग 📷"
-    "ar" -> "التعلم بالكاميرا 📷"
-    "kn" -> "ಕ್ಯಾಮೆರಾ ಕಲಿಕೆ 📷"
-    "ml" -> "ക്യാമറ ലேണിംഗ് 📷"
-    "bn" -> "ক্যামেরা লার্নিং 📷"
-    "mr" -> "कॅмера लर्निंग 📷"
-    "gu" -> "કેમેરા લર્નિંગ 📷"
-    else -> "Camera Learning 📷"
-}
+fun getCameraTitle(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("camera_learning", langCode)
 
 
 

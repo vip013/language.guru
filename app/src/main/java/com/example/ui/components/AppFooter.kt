@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -106,7 +107,7 @@ fun AppFooter(
 
         val gamesLabel = when (langCode) {
             "te" -> "ఆటలు"
-            "ta" -> "விளையாட்டுகள்"
+            "ta" -> "விளையாட்டு"
             "hi" -> "खेल"
             "ar" -> "الألعاب"
             "kn" -> "ಆಟಗಳು"
@@ -116,7 +117,7 @@ fun AppFooter(
 
         val badgesLabel = when (langCode) {
             "te" -> "బహుమతులు"
-            "ta" -> "பதக்கங்கள்"
+            "ta" -> "பதக்கம்"
             "hi" -> "बैज"
             "ar" -> "الأوسمة"
             "kn" -> "ಪದಕಗಳು"
@@ -137,7 +138,7 @@ fun AppFooter(
         Box(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp)
+                .padding(horizontal = 12.dp, vertical = 4.dp)
                 .background(
                     color = Color(0xFFFFFDF6), // Beautiful warm buttery cream background
                     shape = RoundedCornerShape(24.dp)
@@ -146,10 +147,11 @@ fun AppFooter(
                     BorderStroke(2.dp, Color(0xFFEFEBE9)), // Soft warm brown border
                     shape = RoundedCornerShape(24.dp)
                 )
-                .padding(vertical = 8.dp)
+                .height(64.dp)
+                .padding(horizontal = 4.dp, vertical = 4.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -226,14 +228,14 @@ fun NavigationTabItem(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 4.dp, horizontal = 12.dp)
+            .padding(vertical = 2.dp, horizontal = 6.dp)
             .testTag(testTag),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Box(
             modifier = Modifier
-                .size(width = 54.dp, height = 32.dp)
+                .size(width = 50.dp, height = 30.dp)
                 .background(
                     color = if (isActive) Color(0xFFFFECB3) else Color.Transparent, // Amber highlight
                     shape = CircleShape
@@ -249,10 +251,14 @@ fun NavigationTabItem(
         }
         Text(
             text = label,
-            fontSize = 11.sp,
+            fontSize = if (label.length > 7) 10.sp else 11.sp,
+            lineHeight = 12.sp,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             fontWeight = if (isActive) FontWeight.ExtraBold else FontWeight.Bold,
             color = if (isActive) activeColor else inactiveColor,
-            modifier = Modifier.padding(top = 2.dp)
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 1.dp)
         )
     }
 }

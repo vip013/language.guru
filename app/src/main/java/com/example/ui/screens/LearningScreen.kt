@@ -752,15 +752,7 @@ fun LearningScreen(
                                 )
 
                                 Text(
-                                    text = when (langCode) {
-                                        "te" -> "భలే చేసావు! 🌟"
-                                        "ta" -> "அற்புதம்! 🌟"
-                                        "hi" -> "बहुत बढ़िया! 🌟"
-                                        "ar" -> "رائع جداً! 🌟"
-                                        "kn" -> "ಅದ್ಭುತ ಕೆಲಸ! 🌟"
-                                        "ml" -> "മികച്ച പ്രവർത്തനം! 🌟"
-                                        else -> "Great Job! 🌟"
-                                    },
+                                    text = com.example.data.CentralizedContentRepository.getLocalizedUiString("lesson_completed_great_job", langCode),
                                     fontSize = 32.sp,
                                     fontWeight = FontWeight.Black,
                                     color = MaterialTheme.colorScheme.primary,
@@ -773,15 +765,7 @@ fun LearningScreen(
                                 val moduleIcon = activeCategory?.getIcon(langCode) ?: "📚"
 
                                 Text(
-                                    text = when (langCode) {
-                                        "te" -> "నువ్వు $moduleIcon $moduleTitle పాఠాన్ని 100% పూర్తి చేసావు! బంగారు నక్షత్రాలు మరియు డైమండ్స్ గెలుచుకున్నావు! 🏆"
-                                        "ta" -> "நீங்கள் $moduleIcon $moduleTitle பாடத்தை 100% முடித்துவிட்டீர்கள்! தங்க நட்சத்திரங்கள் மற்றும் வைரங்களை வென்றுள்ளீர்கள்! 🏆"
-                                        "hi" -> "आपने $moduleIcon $moduleTitle पाठ को 100% पूरा कर लिया है! आपने सुनहरे सितारे और हीरे अर्जित किए हैं! 🏆"
-                                        "ar" -> "لقد أكملت درس $moduleIcon $moduleTitle بنسبة 100%! لقد حصلت على نجوم ذهبية وجواهر! 🏆"
-                                        "kn" -> "ನೀವು $moduleIcon $moduleTitle ಪಾಠವನ್ನು 100% ಪೂರ್ಣಗೊಳಿಸಿದ್ದೀರಿ! ಚಿನ್ನದ ನಕ್ಷತ್ರಗಳು ಮತ್ತು ವಜ್ರಗಳನ್ನು ಗಳಿಸಿದ್ದೀರಿ! 🏆"
-                                        "ml" -> "നിങ്ങൾ $moduleIcon $moduleTitle പാഠം 100% പൂർത്തിയാക്കി! നിങ്ങൾക്ക് സ്വർണ്ണ നക്ഷത്രങ്ങളും വജ്രങ്ങളും ലഭിച്ചു! 🏆"
-                                        else -> "You completed 100% of $moduleIcon $moduleTitle! You earned golden stars & diamonds! 🏆"
-                                    },
+                                    text = com.example.data.CentralizedContentRepository.getLocalizedUiString("lesson_completed_desc", langCode, moduleIcon, moduleTitle),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -830,15 +814,7 @@ fun LearningScreen(
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
                                     Text(
-                                        text = when (langCode) {
-                                            "te" -> "⭐ మళ్లీ నేర్చుకో"
-                                            "ta" -> "⭐ மீண்டும் கற்க"
-                                            "hi" -> "⭐ फिर से सीखें"
-                                            "ar" -> "⭐ تعلم مجدداً"
-                                            "kn" -> "⭐ ಮತ್ತೊಮ್ಮೆ కలి"
-                                            "ml" -> "⭐ വീണ്ടും പഠിക്കുക"
-                                            else -> "⭐ Learn Again"
-                                        },
+                                        text = com.example.data.CentralizedContentRepository.getLocalizedUiString("btn_learn_again", langCode),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White
@@ -857,15 +833,7 @@ fun LearningScreen(
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
                                     Text(
-                                        text = when (langCode) {
-                                            "te" -> "➡ తదుపరి పాఠం"
-                                            "ta" -> "➡ அடுத்த பாடம்"
-                                            "hi" -> "➡ अगला पाठ"
-                                            "ar" -> "➡ الدرس التالي"
-                                            "kn" -> "➡ ಮುಂದಿನ ಪಾಠ"
-                                            "ml" -> "➡ അടുത്ത പാഠം"
-                                            else -> "➡ Next Lesson"
-                                        },
+                                        text = com.example.data.CentralizedContentRepository.getLocalizedUiString("btn_next_lesson", langCode),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -885,15 +853,7 @@ fun LearningScreen(
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
                                     Text(
-                                        text = when (langCode) {
-                                            "te" -> "🏡 ప్రధాన పేజీకి వెళ్ళు"
-                                            "ta" -> "🏡 முகப்புப் பக்கத்திற்குச் செல்"
-                                            "hi" -> "🏡 मुख्य पृष्ठ पर जाएं"
-                                            "ar" -> "🏡 العودة للرئيسية"
-                                            "kn" -> "🏡 ಮುಖ್ಯ ಪುಟಕ್ಕೆ ಹೋಗಿ"
-                                            "ml" -> "🏡 പ്രധാന പേജിലേക്ക് പോവുക"
-                                            else -> "🏡 Back to Dashboard"
-                                        },
+                                        text = com.example.data.CentralizedContentRepository.getLocalizedUiString("btn_back_dashboard", langCode),
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -922,15 +882,7 @@ fun LearningScreen(
             onDismissRequest = { showQuickQuiz = false },
             title = {
                 Text(
-                    text = when (selectedLanguage?.code ?: "en") {
-                        "te" -> "సమాధానం చెప్పండి! 🧠"
-                        "ta" -> "பதில் கூறுங்கள்! 🧠"
-                        "hi" -> "उत्तर दें! 🧠"
-                        "ar" -> "أجب الآن! 🧠"
-                        "kn" -> "ಉತ್ತರಿಸಿ! 🧠"
-                        "ml" -> "ഉത്തരം പറയൂ! 🧠"
-                        else -> "Can you find? 🧠"
-                    },
+                    text = com.example.data.CentralizedContentRepository.getLocalizedUiString("quiz_dialog_title", langCode),
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -942,15 +894,7 @@ fun LearningScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = when (selectedLanguage?.code ?: "en") {
-                            "te" -> "దీన్ని గుర్తించండి: ${currentItem.display}"
-                            "ta" -> "இதைக் கண்டறியவும்: ${currentItem.display}"
-                            "hi" -> "इसको पहचानें: ${currentItem.display}"
-                            "ar" -> "تحديد: ${currentItem.display}"
-                            "kn" -> "ಇದನ್ನು ಗುರುತಿಸಿ: ${currentItem.display}"
-                            "ml" -> "ഇത് കണ്ടെത്തുക: ${currentItem.display}"
-                            else -> "Tap on: ${currentItem.display} (${currentItem.subtitle})"
-                        },
+                        text = com.example.data.CentralizedContentRepository.getLocalizedUiString("identify_target", langCode, currentItem.display),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.ExtraBold,
                         textAlign = TextAlign.Center,
@@ -1006,15 +950,7 @@ fun LearningScreen(
             confirmButton = {
                 TextButton(onClick = { showQuickQuiz = false }) {
                     Text(
-                        text = when (selectedLanguage?.code ?: "en") {
-                            "te" -> "మూసివేయి"
-                            "ta" -> "மூடு"
-                            "hi" -> "बंद करें"
-                            "ar" -> "إغلاق"
-                            "kn" -> "ಮುಚ್ಚಿ"
-                            "ml" -> "അടയ്ക്കുക"
-                            else -> "Close"
-                        }
+                        text = com.example.data.CentralizedContentRepository.getLocalizedUiString("close", langCode)
                     )
                 }
             },
@@ -1474,65 +1410,17 @@ private fun getMascotBubbleText(
     }
 }
 
-fun getLocalizedQuiz(langCode: String): String {
-    return when (langCode) {
-        "te" -> "కిడ్స్ క్విజ్! 🎮"
-        "ta" -> "கிட்ஸ் குவிஸ்! 🎮"
-        "hi" -> "किड्स क्विज़! 🎮"
-        "kn" -> "ಕಿಡ್ಸ್ ಕ್ವಿಜ್! 🎮"
-        "ml" -> "കിഡ്സ് ക്വിസ്! 🎮"
-        "bn" -> "কিডস কুইজ! 🎮"
-        "mr" -> "किड्स क्विझ! 🎮"
-        "gu" -> "કિડ્સ ક્વિઝ! 🎮"
-        "ar" -> "مسابقة أطفال! 🎮"
-        else -> "Kids Quiz! 🎮"
-    }
-}
+fun getLocalizedQuiz(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("quick_quiz_title", langCode)
 
-fun getLocalizedPractice(langCode: String): String {
-    return when (langCode) {
-        "te" -> "రాత అభ్యాసం ✍️"
-        "ta" -> "எழுத்துப் பயிற்சி ✍️"
-        "hi" -> "लिखने का अभ्यास ✍️"
-        "kn" -> "ಬರವಣಿಗೆ ಅಭ್ಯಾಸ ✍️"
-        "ml" -> "എഴുത്തു പരിശീലനം ✍️"
-        "bn" -> "হাতের লেখা অনুশীলন ✍️"
-        "mr" -> "लेखन सराव ✍️"
-        "gu" -> "લેખન અભ્યાસ ✍️"
-        "ar" -> "ممارسة الكتابة ✍️"
-        else -> "Tracing Practice ✍️"
-    }
-}
+fun getLocalizedPractice(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("tracing_practice_title", langCode)
 
-fun getLocalizedSpeakAndLearn(langCode: String): String {
-    return when (langCode) {
-        "te" -> "మాట్లాడి నేర్చుకో 🗣️"
-        "ta" -> "பேசி பழగు 🗣️"
-        "hi" -> "बोलो और सीखो 🗣️"
-        "kn" -> "ಮಾತನಾಡಿ ಕಲಿ 🗣️"
-        "ml" -> "സംസാരിച്ചു പഠിക്കാം 🗣️"
-        "bn" -> "বলে শেখো 🗣️"
-        "mr" -> "बोला आणि शिका 🗣️"
-        "gu" -> "બોલો અને શીખો 🗣️"
-        "ar" -> "تحدث وتعلم 🗣️"
-        else -> "Speak & Learn 🗣️"
-    }
-}
+fun getLocalizedSpeakAndLearn(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("speak_learn_title", langCode)
 
-fun getLocalizedSpeakInstruction(langCode: String, display: String): String {
-    return when (langCode) {
-        "te" -> "\"$display\" అని పలకండి 🗣️"
-        "ta" -> "\"$display\" என்று சொல்லுங்கள் 🗣️"
-        "hi" -> "\"$display\" बोलिए 🗣️"
-        "kn" -> "\"$display\" ಎಂದು ಹೇಳಿ 🗣️"
-        "ml" -> "\"$display\" എന്ന് പറയുക 🗣️"
-        "bn" -> "\"$display\" বলুন 🗣️"
-        "mr" -> "\"$display\" म्हणा 🗣️"
-        "gu" -> "\"$display\" બોલો 🗣️"
-        "ar" -> "قل \"$display\" 🗣️"
-        else -> "Say \"$display\" 🗣️"
-    }
-}
+fun getLocalizedSpeakInstruction(langCode: String, display: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("speak_instruction", langCode, display)
 
 @Composable
 fun AutoscaledButtonText(

@@ -59,30 +59,31 @@ data class DrawingPoint(val x: Float, val y: Float)
 data class DrawingStroke(val points: List<DrawingPoint>, val color: Color, val width: Float)
 
 fun getCleanTracingCharacter(item: LearningItem): String {
-    val subtitleLower = item.subtitle.lowercase()
-    if (subtitleLower.contains("circle")) {
-        return "◯" // White Large Circle for tracing
-    }
-    if (subtitleLower.contains("triangle")) {
-        return "△" // White Up-Pointing Triangle for tracing
-    }
-    if (subtitleLower.contains("square")) {
-        return "□" // White Square for tracing
-    }
-    if (subtitleLower.contains("rectangle")) {
-        return "▭" // White Rectangle for tracing
-    }
-    if (subtitleLower.contains("star")) {
-        return "☆" // White Star for tracing
+    // 1. Shapes outline mapping based on visual icon / emoji
+    when (item.visualEmoji) {
+        "🔺" -> return "△"
+        "🔴" -> return "◯"
+        "🟩" -> return "□"
+        "█" -> return "▭"
+        "⭐" -> return "☆"
     }
 
-    val display = item.display
+    val display = item.cleanTarget
+
+    // 2. Composite letter with word (e.g. "అ - అమ్మ" or "ا - أَسَد") -> extract root letter "అ" or "ا"
+    if (display.contains(" - ")) {
+        val extracted = display.substringBefore(" - ").trim()
+        if (extracted.isNotEmpty()) return extracted
+    }
+
+    // 3. Parenthesized mathematical or phonetic glyph (e.g. "కూడిక (+)") -> extract "+"
     if (display.contains("(") && display.contains(")")) {
         val extracted = display.substringAfter("(").substringBefore(")").trim()
-        if (extracted.isNotEmpty()) {
+        if (extracted.isNotEmpty() && extracted.length <= 2) {
             return extracted
         }
     }
+
     return display
 }
 
@@ -133,11 +134,29 @@ fun LetterTracingDialog(
         }
     }
 
-    // Direct Gemini API Call for Tracing Validation
+    // Normalized & Tolerant Handwriting Validation Pipeline
     fun checkTracingWithGemini() {
         val width = canvasSize.width
         val height = canvasSize.height
         if (width <= 0 || height <= 0 || strokes.isEmpty()) {
+            return
+        }
+
+        // 1. Check for empty or accidental mark early
+        if (HandwritingRecognitionHelper.isDrawingEmptyOrAccidental(strokes)) {
+            val emptyMsg = com.example.data.CentralizedContentRepository.getLocalizedUiString("tracing_empty_drawing", langCode)
+            tracingState = TracingState.RESULT_ERROR
+            feedbackText = emptyMsg
+            accuracyScore = 0
+            viewModel.playWrongSound()
+            attemptCount++
+            if (attemptCount >= 4 && !isPremium) {
+                showInterventionDialog = true
+            }
+            viewModel.speakCustomText(emptyMsg) {
+                isSpeakingFeedback = false
+            }
+            isSpeakingFeedback = true
             return
         }
         
@@ -145,91 +164,51 @@ fun LetterTracingDialog(
         feedbackText = ""
         
         coroutineScope.launch(Dispatchers.IO) {
+            // 2. Perform fast local structural shape evaluation
+            val localResult = HandwritingRecognitionHelper.evaluateStructuralSimilarity(targetText, strokes)
+            val langName = HandwritingRecognitionHelper.getLanguageName(langCode)
+
             try {
-                // Generate offscreen bitmap representing what they traced
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                val canvas = android.graphics.Canvas(bitmap)
+                // 3. Generate high-clarity dual panel comparison bitmap (Target vs Normalized Learner)
+                val comparisonBitmap = HandwritingRecognitionHelper.createNormalizedComparisonBitmap(
+                    targetText = targetText,
+                    strokes = strokes,
+                    langName = langName
+                )
                 
-                // Chalkboard dark slate bg
-                val bgPaint = android.graphics.Paint().apply {
-                    color = android.graphics.Color.parseColor("#1B2631") // Solid chalkboard blue-gray
-                    style = android.graphics.Paint.Style.FILL
-                }
-                canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), bgPaint)
-                
-                // White background guideline text
-                val textPaint = android.graphics.Paint().apply {
-                    color = android.graphics.Color.parseColor("#34495E") // Light slate gridline/watermark
-                    val letterRatio = when (targetText.length) {
-                        1 -> 0.45f
-                        2 -> 0.32f
-                        3 -> 0.24f
-                        4 -> 0.18f
-                        else -> 0.14f
-                    }
-                    textSize = (width * letterRatio).coerceIn(80f, 400f)
-                    textAlign = android.graphics.Paint.Align.CENTER
-                    isAntiAlias = true
-                    typeface = android.graphics.Typeface.DEFAULT_BOLD
-                }
-                val xPos = width / 2f
-                val textBounds = android.graphics.Rect()
-                textPaint.getTextBounds(targetText, 0, targetText.length, textBounds)
-                val yPos = (height / 2f) + (textBounds.height() / 2f) - textBounds.bottom
-                canvas.drawText(targetText, xPos, yPos, textPaint)
-                
-                // Traced strokes
-                strokes.forEach { stroke ->
-                    if (stroke.points.size > 1) {
-                        val paint = android.graphics.Paint().apply {
-                            color = android.graphics.Color.rgb(
-                                (stroke.color.red * 255).toInt(),
-                                (stroke.color.green * 255).toInt(),
-                                (stroke.color.blue * 255).toInt()
-                            )
-                            strokeWidth = 28f
-                            style = android.graphics.Paint.Style.STROKE
-                            strokeCap = android.graphics.Paint.Cap.ROUND
-                            strokeJoin = android.graphics.Paint.Join.ROUND
-                            isAntiAlias = true
-                        }
-                        val path = android.graphics.Path().apply {
-                            val first = stroke.points.first()
-                            moveTo(first.x, first.y)
-                            for (i in 1 until stroke.points.size) {
-                                val p = stroke.points[i]
-                                lineTo(p.x, p.y)
-                            }
-                        }
-                        canvas.drawPath(path, paint)
-                    }
-                }
-                
-                // Base64 compression
                 val outputStream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
+                comparisonBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputStream)
                 val base64Image = Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
+                comparisonBitmap.recycle()
                 
-                // Prompt instructing Gemini 
+                // Prompt instructing Gemini with tolerant handwriting recognition criteria
                 val characterName = if (isMotu) "Motu (the kid-friendly buddy)" else "Bhalu Bear (the warm school teacher)"
                 val promptText = """
-                    You are acting as $characterName, a friendly kid's helper teacher.
-                    A child has tried to trace or write the character/symbol "$targetText".
-                    In the image:
-                    - The thin, dark blue-gray background outline is the template watermark they were supposed to trace.
-                    - The bright, thick colored lines are the actual finger strokes drawn by the child.
-                    
-                    Evaluate their drawing:
-                    - Be encouraging but realistic and precise. Rate their drawing/tracing on an honest scale of 0 to 100 for "accuracyScore", based on how closely their strokes match and align with the path of the target template "$targetText".
-                    - If the "accuracyScore" is 50 or higher, set "isCorrect" to true.
-                    - If the "accuracyScore" is less than 50, you MUST set "isCorrect" to false.
-                    - IMPORTANT LENIENCY OVERRIDE: If the character "$targetText" is Tamil "ஈ" (EE) or has complex structures with multiple disconnected strokes and dots, you MUST be extremely generous and lenient. Since children drawing with fingers struggle to place dots inside and outside the rectangular frame of "ஈ" perfectly, any attempt that roughly matches its vertical-horizontal structure and outer lines should be scored 60-80 and marked as Correct (isCorrect = true). Do not fail them for missing dots or minor alignment issues.
+                    You are acting as $characterName, an encouraging teacher evaluating handwriting practice.
+                    Target character / symbol: "$targetText"
+                    Language / Writing System: $langName (code: '$langCode')
+
+                    The image contains two panels:
+                    - LEFT: Target character reference "$targetText".
+                    - RIGHT: Learner's actual handwritten drawing (centered and normalized).
+
+                    EVALUATION CRITERIA (HANDWRITING RECOGNITION, NOT RIGID OVERLAY TRACING):
+                    1. Evaluate whether the learner's drawing recognizably represents the target character "$targetText".
+                    2. Allow natural handwriting variations:
+                       - Do NOT require exact font matching or pixel-by-pixel alignment.
+                       - Allow variations in stroke thickness, size, minor rotation or slant, stroke spacing, and personal handwriting style.
+                       - In Indian scripts (Telugu, Tamil, Hindi, Kannada, Malayalam, Bengali, etc.), Arabic, or English, children often write curves, loops, or dots with natural slight imperfections. If the character is recognizable as the target, ACCEPT IT.
+                    3. Scoring rules:
+                       - Clearly matching target character or natural variation: set "isCorrect": true, "accuracyScore": 65-95.
+                       - Slightly imperfect handwriting recognizably forming the target: set "isCorrect": true, "accuracyScore": 55-75.
+                       - Clearly a different character or random scribble: set "isCorrect": false, "accuracyScore": 15-40.
+                       - Empty or accidental dot: set "isCorrect": false, "accuracyScore": 0-10.
                     
                     You MUST respond with a valid JSON object containing exactly these keys:
                     {
                       "isCorrect": true or false,
-                      "feedback": "A short, cheerful, encouraging sentence of feedback with cute emojis. The selected kid's language is '$langCode'. You MUST write the feedback entirely in '$langCode' (e.g. if 'te', write in sweet Telugu; if 'ta', write in Tamil; if 'hi', write in Hindi; if 'kn', write in Kannada; if 'ml', write in Malayalam; if 'ar', write in Arabic; if 'bn', write in Bengali; if 'mr', write in Marathi; if 'gu', write in Gujarati; if 'en', write in English). If they scored below 50, gently ask them to try again entirely in '$langCode' to reach at least 50%. Do NOT use any markdown symbols like double asterisks (**) or single asterisks (*) anywhere in the feedback string.",
-                      "accuracyScore": an integer from 0 to 100 based on stroke completeness and template alignment
+                      "feedback": "A short, cheerful, encouraging sentence with cute emojis in '$langCode' (e.g. if 'te', write in sweet Telugu; if 'ta', write in Tamil; if 'hi', write in Hindi; if 'kn', write in Kannada; if 'ml', write in Malayalam; if 'ar', write in Arabic; if 'en', write in English). If incorrect, gently encourage them to try '$targetText' again in '$langCode'. Do NOT use any asterisks.",
+                      "accuracyScore": integer from 0 to 100
                     }
                     
                     Strictly return ONLY the raw JSON object inside triple backticks (```json ... ```) with no other text.
@@ -261,9 +240,9 @@ fun LetterTracingDialog(
                 }
 
                 val client = OkHttpClient.Builder()
-                    .connectTimeout(30, TimeUnit.SECONDS)
-                    .readTimeout(30, TimeUnit.SECONDS)
-                    .writeTimeout(30, TimeUnit.SECONDS)
+                    .connectTimeout(25, TimeUnit.SECONDS)
+                    .readTimeout(25, TimeUnit.SECONDS)
+                    .writeTimeout(25, TimeUnit.SECONDS)
                     .build()
 
                 val request = Request.Builder()
@@ -273,10 +252,30 @@ fun LetterTracingDialog(
 
                 client.newCall(request).enqueue(object : Callback {
                     override fun onFailure(call: Call, e: IOException) {
-                        Log.e("TracingGemini", "Failed network tracing request", e)
+                        Log.e("TracingGemini", "Network error in tracing check, falling back to local structural evaluation", e)
+                        // Seamless local structural fallback
+                        val isCorrect = localResult.isCorrect
+                        val score = if (isCorrect) maxOf(localResult.score, 70) else minOf(localResult.score, 40)
+                        val feedback = if (isCorrect) getLocalizedSuccessMessage(langCode) else getLocalizedTryAgainMessage(langCode)
+
                         coroutineScope.launch {
-                            tracingState = TracingState.RESULT_ERROR
-                            feedbackText = "Error evaluating. Try again, buddy!"
+                            feedbackText = feedback
+                            accuracyScore = score
+                            if (isCorrect) {
+                                tracingState = TracingState.RESULT_SUCCESS
+                                viewModel.playCorrectSound()
+                                viewModel.recordWritingPracticeCompletion()
+                                attemptCount = 0
+                            } else {
+                                tracingState = TracingState.RESULT_ERROR
+                                viewModel.playWrongSound()
+                                attemptCount++
+                                if (attemptCount >= 4 && !isPremium) {
+                                    showInterventionDialog = true
+                                }
+                            }
+                            viewModel.speakCustomText(feedback) { isSpeakingFeedback = false }
+                            isSpeakingFeedback = true
                         }
                     }
 
@@ -293,7 +292,6 @@ fun LetterTracingDialog(
                                     val firstPart = parts?.optJSONObject(0)
                                     var text = firstPart?.optString("text") ?: ""
                                     
-                                    // Extract JSON if model wrapped in markdown
                                     if (text.contains("```json")) {
                                         text = text.substringAfter("```json").substringBefore("```").trim()
                                     } else if (text.contains("```")) {
@@ -301,25 +299,31 @@ fun LetterTracingDialog(
                                     }
                                     
                                     val parsedJson = JSONObject(text)
-                                    var score = parsedJson.optInt("accuracyScore", 80)
+                                    val geminiCorrect = parsedJson.optBoolean("isCorrect", false)
+                                    var score = parsedJson.optInt("accuracyScore", if (geminiCorrect) 80 else 40)
                                     
-                                    // Robust Override for Tamil "ஈ" (EE) to ensure children are never wrongly marked incorrect
-                                    if (targetText == "ஈ" || targetText.contains("ஈ")) {
+                                    // Robust Override for structurally complex characters
+                                    if (HandwritingRecognitionHelper.isComplexStructuralTarget(targetText)) {
                                         if (score < 65) {
                                             score = 75
                                         }
                                     }
                                     
-                                    val isCorrect = score >= 50
+                                    // Tolerant validation: Accept if AI confirms OR local structural shape analysis is confident (>= 48)
+                                    val isCorrect = geminiCorrect || score >= 50 || localResult.isCorrect
+
+                                    if (isCorrect && score < 65) {
+                                        score = maxOf(score, localResult.score, 70)
+                                    }
+                                    
+                                    val rawFeedback = parsedJson.optString("feedback", "")
                                     val feedback = if (!isCorrect) {
                                         getLocalizedTryAgainMessage(langCode)
                                     } else {
-                                        if (targetText == "ஈ" || targetText.contains("ஈ")) {
-                                            // Provide highly positive Tamil/English encouraging feedback
-                                            if (langCode == "ta") "அற்புதம்! ஈ எழுத்தை மிக அழகாக எழுதினீர்கள்! 🌟"
-                                            else parsedJson.optString("feedback", "Excellent job tracing the letter ஈ! 🌟")
+                                        if (rawFeedback.isNotBlank() && rawFeedback.length > 3) {
+                                            rawFeedback.replace("*", "")
                                         } else {
-                                            parsedJson.optString("feedback", "Good try!")
+                                            getLocalizedSuccessMessage(langCode)
                                         }
                                     }
                                     
@@ -335,28 +339,64 @@ fun LetterTracingDialog(
                                             tracingState = TracingState.RESULT_ERROR
                                             viewModel.playWrongSound()
                                             attemptCount++
-                                            if (attemptCount >= 30 && !isPremium) {
+                                            if (attemptCount >= 4 && !isPremium) {
                                                 showInterventionDialog = true
                                             }
                                         }
                                         
-                                        // Speak feedback
                                         viewModel.speakCustomText(feedback) {
                                             isSpeakingFeedback = false
                                         }
                                         isSpeakingFeedback = true
                                     }
                                 } catch (ex: Exception) {
-                                    Log.e("TracingGemini", "JSON parsing tracing failure: $bodyStr", ex)
+                                    Log.e("TracingGemini", "JSON parsing tracing failure, falling back to local validation: $bodyStr", ex)
+                                    val isCorrect = localResult.isCorrect
+                                    val score = if (isCorrect) maxOf(localResult.score, 70) else minOf(localResult.score, 40)
+                                    val feedback = if (isCorrect) getLocalizedSuccessMessage(langCode) else getLocalizedTryAgainMessage(langCode)
                                     coroutineScope.launch {
-                                        tracingState = TracingState.RESULT_ERROR
-                                        feedbackText = "Almost there! Let's clean the board and try once more!"
+                                        feedbackText = feedback
+                                        accuracyScore = score
+                                        if (isCorrect) {
+                                            tracingState = TracingState.RESULT_SUCCESS
+                                            viewModel.playCorrectSound()
+                                            viewModel.recordWritingPracticeCompletion()
+                                            attemptCount = 0
+                                        } else {
+                                            tracingState = TracingState.RESULT_ERROR
+                                            viewModel.playWrongSound()
+                                            attemptCount++
+                                            if (attemptCount >= 4 && !isPremium) {
+                                                showInterventionDialog = true
+                                            }
+                                        }
+                                        viewModel.speakCustomText(feedback) { isSpeakingFeedback = false }
+                                        isSpeakingFeedback = true
                                     }
                                 }
                             } else {
+                                // Server returned non-success, fallback to local structural result
+                                val isCorrect = localResult.isCorrect
+                                val score = if (isCorrect) maxOf(localResult.score, 70) else minOf(localResult.score, 40)
+                                val feedback = if (isCorrect) getLocalizedSuccessMessage(langCode) else getLocalizedTryAgainMessage(langCode)
                                 coroutineScope.launch {
-                                    tracingState = TracingState.RESULT_ERROR
-                                    feedbackText = "Oh! My marker is dry. Let's trace again!"
+                                    feedbackText = feedback
+                                    accuracyScore = score
+                                    if (isCorrect) {
+                                        tracingState = TracingState.RESULT_SUCCESS
+                                        viewModel.playCorrectSound()
+                                        viewModel.recordWritingPracticeCompletion()
+                                        attemptCount = 0
+                                    } else {
+                                        tracingState = TracingState.RESULT_ERROR
+                                        viewModel.playWrongSound()
+                                        attemptCount++
+                                        if (attemptCount >= 4 && !isPremium) {
+                                            showInterventionDialog = true
+                                        }
+                                    }
+                                    viewModel.speakCustomText(feedback) { isSpeakingFeedback = false }
+                                    isSpeakingFeedback = true
                                 }
                             }
                         }
@@ -364,14 +404,35 @@ fun LetterTracingDialog(
                 })
 
             } catch (ex: Exception) {
-                Log.e("TracingGemini", "Error preparing bitmap", ex)
+                Log.e("TracingGemini", "Error preparing bitmap, falling back to local result", ex)
+                val isCorrect = localResult.isCorrect
+                val score = if (isCorrect) maxOf(localResult.score, 70) else minOf(localResult.score, 40)
+                val feedback = if (isCorrect) getLocalizedSuccessMessage(langCode) else getLocalizedTryAgainMessage(langCode)
                 coroutineScope.launch {
-                    tracingState = TracingState.RESULT_ERROR
-                    feedbackText = "Oops! Something went wrong. Let's try drawing again!"
+                    feedbackText = feedback
+                    accuracyScore = score
+                    if (isCorrect) {
+                        tracingState = TracingState.RESULT_SUCCESS
+                        viewModel.playCorrectSound()
+                        viewModel.recordWritingPracticeCompletion()
+                        attemptCount = 0
+                    } else {
+                        tracingState = TracingState.RESULT_ERROR
+                        viewModel.playWrongSound()
+                        attemptCount++
+                        if (attemptCount >= 4 && !isPremium) {
+                            showInterventionDialog = true
+                        }
+                    }
+                    viewModel.speakCustomText(feedback) { isSpeakingFeedback = false }
+                    isSpeakingFeedback = true
                 }
             }
         }
     }
+
+    val isRtl = remember(langCode) { com.example.data.CentralizedContentRepository.isRtl(langCode) }
+    val layoutDirection = if (isRtl) androidx.compose.ui.unit.LayoutDirection.Rtl else androidx.compose.ui.unit.LayoutDirection.Ltr
 
     Dialog(
         onDismissRequest = {
@@ -382,9 +443,9 @@ fun LetterTracingDialog(
     ) {
         Surface(
             modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding(),
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding(),
             color = Color.Transparent
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -419,13 +480,29 @@ fun LetterTracingDialog(
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                    IconButton(
-                        onClick = {
-                            viewModel.stopSpeech()
-                            onDismiss()
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val remainingAttempts = (4 - attemptCount).coerceIn(0, 4)
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (attemptCount >= 3) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text(
+                                text = "🎯 $remainingAttempts/4",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (attemptCount >= 3) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
                         }
-                    ) {
-                        Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
+                        IconButton(
+                            onClick = {
+                                viewModel.stopSpeech()
+                                onDismiss()
+                            }
+                        ) {
+                            Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
+                        }
                     }
                 }
 
@@ -971,7 +1048,15 @@ fun LetterTracingDialog(
                             )
                             Spacer(modifier = Modifier.height(14.dp))
                             Text(
-                                text = "Drawing letters takes practice! You've tried 30 times. Would you like to spend 2 Stars or 1 Diamond to get tracing help and retry?",
+                                text = when (langCode) {
+                                    "te" -> "అక్షరాలు రాయడం సాధనతో వస్తుంది! మీరు 4 ప్రయత్నాలు పూర్తి చేశారు. 1 డైమండ్ ఉపయోగించి మళ్లీ ప్రయత్నించాలనుకుంటున్నారా?"
+                                    "ta" -> "எழுத்துக்கள் எழுத பயிற்சி தேவை! நீங்கள் 4 முயற்சிகளை முடித்துவிட்டீர்கள். 1 வைரத்தைப் பயன்படுத்தி மீண்டும் முயற்சிக்க விரும்புகிறீர்களா?"
+                                    "hi" -> "अक्षर लिखना अभ्यास से आता है! आपने 4 प्रयास पूरे कर लिए हैं। क्या आप 1 डायमंड का उपयोग करके पुनः प्रयास करना चाहते हैं?"
+                                    "kn" -> "ಅಕ್ಷರಗಳನ್ನು ಬರೆಯಲು ಅಭ್ಯಾಸ ಬೇಕು! ನೀವು 4 ಪ್ರಯತ್ನಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸಿದ್ದೀರಿ. 1 ವಜ್ರ ಬಳಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಬಯಸುವಿರಾ?"
+                                    "ml" -> "അക്ഷരങ്ങൾ എഴുതാൻ പരിശീലനം വേണം! നിങ്ങൾ 4 ശ്രമങ്ങൾ പൂർത്തിയാക്കി. 1 ഡയമണ്ട് ഉപയോഗിച്ച് വീണ്ടും ശ്രമിക്കണോ?"
+                                    "ar" -> "كتابة الحروف تحتاج إلى تدريب! لقد استخدمت محاولاتك الأربع. هل ترغب في استخدام ماسة واحدة للمحاولة مجدداً؟"
+                                    else -> "Writing letters takes practice! You've used your 4 free attempts. Would you like to spend 1 Diamond to try again?"
+                                },
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center,
@@ -979,37 +1064,17 @@ fun LetterTracingDialog(
                             )
                             Spacer(modifier = Modifier.height(20.dp))
 
-                            // Option 1: Spend 2 Stars
-                            Button(
-                                onClick = {
-                                    if (viewModel.deductStars(2)) {
-                                        attemptCount = 0
-                                        showInterventionDialog = false
-                                        // Auto-draw demo for them as help!
-                                        showDemoStroke = true
-                                        feedbackText = "Stars used! Retrying with tracing guidelines!"
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                enabled = totalStars >= 2,
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFB300))
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("⭐ Spend 2 Stars", fontWeight = FontWeight.Bold)
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text("(Have: $totalStars)", fontSize = 11.sp, color = Color.White.copy(alpha = 0.8f))
-                                }
-                            }
-
-                            // Option 2: Spend 1 Diamond
+                            // Option 1: Spend 1 Diamond (Primary retry option)
                             Button(
                                 onClick = {
                                     if (viewModel.deductDiamonds(1)) {
                                         attemptCount = 0
                                         showInterventionDialog = false
+                                        strokes.clear()
+                                        currentPoints.clear()
+                                        tracingState = TracingState.IDLE
+                                        feedbackText = ""
                                         showDemoStroke = true
-                                        feedbackText = "Diamond spent! Guidance activated!"
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
@@ -1024,6 +1089,31 @@ fun LetterTracingDialog(
                                 }
                             }
 
+                            // Option 2: Spend 2 Stars
+                            Button(
+                                onClick = {
+                                    if (viewModel.deductStars(2)) {
+                                        attemptCount = 0
+                                        showInterventionDialog = false
+                                        strokes.clear()
+                                        currentPoints.clear()
+                                        tracingState = TracingState.IDLE
+                                        feedbackText = ""
+                                        showDemoStroke = true
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                enabled = totalStars >= 2,
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFB300))
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("⭐ Spend 2 Stars", fontWeight = FontWeight.Bold)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("(Have: $totalStars)", fontSize = 11.sp, color = Color.White.copy(alpha = 0.8f))
+                                }
+                            }
+
                             // Option 3: Join VIP Club / Go Premium
                             Button(
                                 onClick = {
@@ -1031,12 +1121,16 @@ fun LetterTracingDialog(
                                     viewModel.buyPremiumSubscription("VIP Quick Start")
                                     attemptCount = 0
                                     showInterventionDialog = false
+                                    strokes.clear()
+                                    currentPoints.clear()
+                                    tracingState = TracingState.IDLE
+                                    feedbackText = ""
                                 },
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF4081))
                             ) {
-                                Text("👑 Join VIP Club (Free Unlimited Retry!)", fontWeight = FontWeight.ExtraBold)
+                                Text("👑 Join VIP Club (Unlimited Retries!)", fontWeight = FontWeight.ExtraBold)
                             }
 
                             Spacer(modifier = Modifier.height(10.dp))
@@ -1051,33 +1145,20 @@ fun LetterTracingDialog(
                     }
                 }
             }
-        }
+            }
         }
     }
 }
 
-fun getTracingInstruction(targetText: String, langCode: String): String {
-    return when (langCode) {
-        "te" -> "పలక మీద చూపిస్తున్న అక్షరం/గుర్తు '$targetText' ని నీ వేలితో దిద్దు బంగారం! ఆపై 'సరిచూడు' నొక్కు!"
-        "ta" -> "பலகையில் காட்டப்பட்டுள்ள எழுத்து/குறியீடு '$targetText' ஐ உங்கள் விரலால் வரைந்து, பின்னர் 'சரிபார்' என்பதை அழுத்தவும்!"
-        "hi" -> "स्लेट पर दिखाए गए अक्षर/प्रतीक '$targetText' को अपनी उंगली से ट्रेस करें और फिर 'जांचें' दबाएं!"
-        "ar" -> "تتبع الحرف/الرمز '$targetText' على اللوح بإصبعك ثم اضغط على 'تحقق'!"
-        "kn" -> "ಹಲಗೆಯ ಮೇಲೆ ತೋರಿಸಿರುವ ಅಕ್ಷರ/ಚಿಹ್ನೆ '$targetText' ಅನ್ನು ನಿಮ್ಮ ಬೆರಳಿನಿಂದ ಬರೆಯಿರಿ ಮತ್ತು ನಂತರ 'ಸರಿನೋಡು' ಒತ್ತಿ!"
-        "ml" -> "സ്ലേറ്റിൽ കാണിച്ചിരിക്കുന്ന അക്ഷരം/ചിഹ്നം '$targetText' നിങ്ങളുടെ വിരൽ കൊണ്ട് വരയ്ക്കുക, തുടർന്ന് 'പരിശോധിക്കുക' അമർത്തുക!"
-        else -> "Trace the letter/symbol '$targetText' on the slate with your finger and press 'Check Trace'!"
-    }
-}
+fun getTracingInstruction(targetText: String, langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("tracing_instruction", langCode, targetText)
 
-private fun getLocalizedTryAgainMessage(langCode: String): String = when (langCode) {
-    "te" -> "మళ్లీ ప్రయత్నించు బంగారం! 50% కంటే తక్కువ ఖచ్చితత్వం ఉంది. నువ్వు చేయగలవు! 🌱"
-    "ta" -> "மீண்டும் முயலுங்கள் செல்லமே! துல்லியம் 50% க்கும் குறைவாக உள்ளது. உங்களால் முடியும்! 🌱"
-    "hi" -> "फिर से कोशिश करो प्यारे बच्चे! सटीकता 50% से कम है। आप कर सकते हैं! 🌱"
-    "kn" -> "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸು ಕಂದಾ! ನಿಖರತೆ 50% ಕ್ಕಿಂತ ಕಡಿಮೆಯಿದೆ. ನೀನು ಮಾಡಬಲ್ಲೆ! 🌱"
-    "ml" -> "വീണ്ടും ശ്രമിക്കൂ കുട്ടീ! കൃത്യത 50%-ൽ താഴെയാണ്. നിനക്ക് സാധിക്കും! 🌱"
-    "bn" -> "আবার চেষ্টা করো সোনা! নির্ভুলता 50% এর নিচে। তুমি পারবে! 🌱"
-    "mr" -> "पुन्हा प्रयत्न करा बाळा! अचूकता 50% पेक्षा कमी आहे. तू करू शकतोस! 🌱"
-    "gu" -> "ફરીથી પ્રયત્ન કર બેટા! ચોકસાઈ 50% થી ઓછી છે. તમે કરી શકો છો! 🌱"
-    "ar" -> "حاول مرة أخرى يا بطل! الدقة أقل من 50٪. يمكنك القيام بذلك! 🌱"
-    else -> "Try again, buddy! Accuracy is below 50%. You can do it! 🌱"
-}
+private fun getLocalizedEmptyMessage(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("tracing_empty_drawing", langCode)
+
+private fun getLocalizedSuccessMessage(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("tracing_correct", langCode)
+
+private fun getLocalizedTryAgainMessage(langCode: String): String =
+    com.example.data.CentralizedContentRepository.getLocalizedUiString("tracing_try_again", langCode)
 

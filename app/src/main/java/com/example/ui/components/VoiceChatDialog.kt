@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,12 +37,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import com.example.BuildConfig
+import com.example.data.CentralizedContentRepository
 import com.example.viewmodel.LearningViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -91,57 +96,15 @@ fun VoiceChatDialog(
 
     val currentItem = viewModel.getCurrentItem()
 
-    // Pre-defined kid-friendly quick buttons
-    val quickPhrases = when (langCode) {
-        "te" -> listOf(
-            "ఇది ఏమిటి? 🤔" to "ఇది ఏమిటి?",
-            "ఇంగ్లీష్ లో ఏమంటారు? 🇬🇧" to "How do you say this in English?",
-            "మళ్లీ చెప్పు 🔊" to "మళ్లీ చెప్పు",
-            "నాకో కథ చెప్పు 📖" to "నాకో చిన్న కథ చెప్పు",
-            "మరో పదం చెప్పు ✨" to "మరో కొత్త పదం నేర్పించు"
-        )
-        "ta" -> listOf(
-            "இது என்ன? 🤔" to "இது என்ன?",
-            "ஆங்கிலத்தில் எப்படி சொல்வது? 🇬🇧" to "How do you say this in English?",
-            "மீண்டும் கூறு 🔊" to "மீண்டும் கூறு",
-            "ஒரு கதை கூறு 📖" to "ஒரு குட்டிக் கதை கூறு",
-            "மற்றொரு வார்த்தை ✨" to "மற்றொரு புதிய வார்த்தையைக் கற்றுக்கொடு"
-        )
-        "hi" -> listOf(
-            "यह क्या है? 🤔" to "यह क्या है?",
-            "अंग्रेजी में क्या कहेंगे? 🇬🇧" to "How do you say this in English?",
-            "फिर से बोलो 🔊" to "फिर से बोलो",
-            "कहानी सुनाओ 📖" to "मुझे एक छोटी कहानी सुनाओ",
-            "दूसरा शब्द ✨" to "मुझे एक और नया शब्द सिखाओ"
-        )
-        "ar" -> listOf(
-            "ما هذا؟ 🤔" to "ما هذا؟",
-            "كيف بالإنجليزية؟ 🇬🇧" to "How do you say this in English?",
-            "أعد مجدداً 🔊" to "أعد مجدداً",
-            "احكِ لي قصة 📖" to "احكِ لي قصة قصيرة",
-            "كلمة أخرى ✨" to "علمني كلمة جديدة أخرى"
-        )
-        "kn" -> listOf(
-            "ಇದು ಏನು? 🤔" to "ಇದು ಏನು?",
-            "ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ಹೇಗೆ ಹೇಳುವುದು? 🇬🇧" to "How do you say this in English?",
-            "ಮತ್ತೊಮ್ಮೆ ಹೇಳು 🔊" to "ಮತ್ತೊಮ್ಮೆ ಹೇಳು",
-            "ಒಂದು ಕಥೆ ಹೇಳು 📖" to "ನನಗೊಂದು ಸಣ್ಣ ಕಥೆ ಹೇಳು",
-            "ಮತ್ತೊಂದು ಪದ ✨" to "ನನಗೆ ಮತ್ತೊಂದು ಹೊಸ ಪದ ಕಲಿಸು"
-        )
-        "ml" -> listOf(
-            "ಇതെന്താണ്? 🤔" to "ಇതെന്താണ്?",
-            "ഇംഗ്ലീഷിൽ എങ്ങനെ പറയും? 🇬🇧" to "How do you say this in English?",
-            "ഒന്നുകൂടി പറയൂ 🔊" to "ഒന്നുകൂടി പറയൂ",
-            "ഒരു കഥ പറയൂ 📖" to "എനിക്ക് ഒരു കുട്ടി കഥ പറയൂ",
-            "മറ്റൊരു വാക്ക് ✨" to "എനിക്ക് മറ്റൊരു പുതിയ വാക്ക് പഠിപ്പിച്ചു തരൂ"
-        )
-        else -> listOf(
-            "What is this? 🤔" to "What is this item?",
-            "How in Telugu? 🇮🇳" to "How do you say this in Telugu?",
-            "Say it again 🔊" to "Say again",
-            "Tell a story 📖" to "Tell me a short story",
-            "Another word ✨" to "Teach me another new word"
-        )
+    // Centralized kid-friendly quick buttons
+    val quickPhrases = remember(langCode) { CentralizedContentRepository.getQuickPhrases(langCode) }
+
+    LaunchedEffect(Unit) {
+        viewModel.setVoiceOn(true)
+        viewModel.setAvatarMuted(false)
+        delay(400)
+        val welcomeMsg = getVoiceChatText("welcome", langCode)
+        viewModel.speakCustomText(welcomeMsg, forceAudio = true)
     }
 
     // Call Gemini API
@@ -178,17 +141,19 @@ fun VoiceChatDialog(
         if (isSayAgain) {
             if (previousResponse.isNotEmpty()) {
                 responseText = previousResponse
-                viewModel.speakCustomText(previousResponse)
+                viewModel.speakCustomText(previousResponse, forceAudio = true)
             } else {
                 val fallback = getVoiceChatText("fallback_no_speech", langCode)
                 responseText = fallback
-                viewModel.speakCustomText(fallback)
+                viewModel.speakCustomText(fallback, forceAudio = true)
             }
             return
         }
 
         isThinking = true
-        responseText = getVoiceChatText("thinking", langCode)
+        val thinkingText = getVoiceChatText("thinking", langCode)
+        responseText = thinkingText
+        viewModel.speakCustomText(thinkingText, forceAudio = true)
         
         // Update avatar animation to thinking
         // Expose direct variable changes if supported, or via speaking flows
@@ -242,7 +207,7 @@ fun VoiceChatDialog(
                         coroutineScope.launch {
                             isThinking = false
                             responseText = getVoiceChatText("brain_offline", langCode)
-                            viewModel.speakCustomText(responseText)
+                            viewModel.speakCustomText(responseText, forceAudio = true)
                         }
                     }
 
@@ -265,15 +230,21 @@ fun VoiceChatDialog(
                                             responseText = text
                                             previousResponse = text
                                             // Make avatar speak response
-                                            viewModel.speakCustomText(text)
+                                            viewModel.speakCustomText(text, forceAudio = true)
                                         } else {
-                                            responseText = getVoiceChatText("not_hear", langCode)
+                                            val fallbackMsg = getVoiceChatText("not_hear", langCode)
+                                            responseText = fallbackMsg
+                                            viewModel.speakCustomText(fallbackMsg, forceAudio = true)
                                         }
                                     } catch (e: Exception) {
-                                        responseText = "Error reading response: ${e.message}"
+                                        val fallbackMsg = getVoiceChatText("silly_response", langCode)
+                                        responseText = fallbackMsg
+                                        viewModel.speakCustomText(fallbackMsg, forceAudio = true)
                                     }
                                 } else {
-                                    responseText = getVoiceChatText("silly_response", langCode)
+                                    val fallbackMsg = getVoiceChatText("silly_response", langCode)
+                                    responseText = fallbackMsg
+                                    viewModel.speakCustomText(fallbackMsg, forceAudio = true)
                                 }
                             }
                         }
@@ -282,7 +253,9 @@ fun VoiceChatDialog(
 
             } catch (ex: Exception) {
                 isThinking = false
-                responseText = "Request failure: ${ex.message}"
+                val fallbackMsg = getVoiceChatText("silly_response", langCode)
+                responseText = fallbackMsg
+                viewModel.speakCustomText(fallbackMsg, forceAudio = true)
             }
         }
     }
@@ -350,22 +323,25 @@ fun VoiceChatDialog(
                     SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech input timeout"
                     else -> "Speech recognition error"
                 }
-                Log.e("VoiceChat", "Speech error code: $error ($errorMsg)")
+                Log.w("VoiceChat", "Speech recognition notice: code $error ($errorMsg)")
                 isListening = false
-                isSimulatingMic = false
-                
-                if (error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
-                    responseText = when (langCode) {
-                        "te" -> "నేను వినలేకపోయాను. దయచేసి మళ్లీ మైక్ బటన్ నొక్కి మాట్లాడండి లేదా టైప్ చేయండి! 🎙️✍️"
-                        "ta" -> "என்னால் கேட்க முடியவில்லை. மீண்டும் மைக்கை அழுத்தவும் அல்லது தட்டச்சு செய்யவும்! 🎙️✍️"
-                        "hi" -> "मैं सुन नहीं पाया। कृपया फिर से माइक दबाएं या टाइप करें! 🎙️✍️"
-                        "ar" -> "لم أتمكن من السماع. يرجى الضغط على الميكروفون مجدداً أو الكتابة! 🎙️✍️"
-                        "kn" -> "ನನಗೆ ಕೇಳಿಸಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ ಮೈಕ್ ಒತ್ತಿ ಅಥವಾ ಟೈಪ್ ಮಾಡಿ! 🎙️✍️"
-                        "ml" -> "എനിക്ക് കേൾക്കാൻ കഴിഞ്ഞില്ല. ദയവായി വീണ്ടും മൈക്ക് അമർക്കുക അല്ലെങ്കിൽ ടൈപ്പ് ചെയ്യുക! 🎙️✍️"
-                        else -> "I didn't catch that. Please tap the mic again to speak, or write your question! 🎙️✍️"
+                try {
+                    speechRecognizer?.cancel()
+                } catch (_: Exception) {}
+
+                // If not already handling via the interactive mic simulation, trigger speech query
+                if (!isSimulatingMic) {
+                    if (chatInput.isNotBlank()) {
+                        val query = chatInput
+                        chatInput = ""
+                        askGemini(query)
+                    } else if (currentItem != null) {
+                        val query = getVoiceChatText("mock_story", langCode, currentItem.display)
+                        askGemini(query)
+                    } else {
+                        val query = getVoiceChatText("mock_joke", langCode)
+                        askGemini(query)
                     }
-                } else {
-                    responseText = "Error listening: $errorMsg. Please try again!"
                 }
             }
 
@@ -379,9 +355,14 @@ fun VoiceChatDialog(
                     isSimulatingMic = false
                     askGemini(speechResult)
                 } else {
-                    responseText = getVoiceChatText("not_hear", langCode)
+                    val query = if (currentItem != null) {
+                        getVoiceChatText("mock_story", langCode, currentItem.display)
+                    } else {
+                        getVoiceChatText("mock_joke", langCode)
+                    }
                     isListening = false
                     isSimulatingMic = false
+                    askGemini(query)
                 }
             }
 
@@ -390,7 +371,7 @@ fun VoiceChatDialog(
                 if (!matches.isNullOrEmpty()) {
                     val partialText = matches[0]
                     chatInput = partialText
-                    responseText = "Listening: \"$partialText\"... 🎤"
+                    responseText = "🎤 \"$partialText\""
                 }
             }
 
@@ -413,26 +394,21 @@ fun VoiceChatDialog(
             }
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, speechLocale)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, speechLocale)
-            putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, speechLocale)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            
-            // Adjust silence thresholds generously to let the child finish speaking without being interrupted early
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 10000L) // 10s min speech window
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 4000L) // 4s complete silence window
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 4000L) // 4s possible silence window
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
         }
         
         try {
+            speechRecognizer?.cancel()
             speechRecognizer?.setRecognitionListener(recognitionListener)
             speechRecognizer?.startListening(intent)
             isListening = true
             isSimulatingMic = true
             chatInput = ""
         } catch (e: Exception) {
-            Log.e("VoiceChat", "Error starting speech recognizer", e)
-            responseText = "Could not start mic listener: ${e.message}"
+            Log.w("VoiceChat", "Error starting speech recognizer", e)
             isListening = false
-            isSimulatingMic = false
+            // Keep isSimulatingMic active so user interaction continues smoothly
         }
     }
 
@@ -442,6 +418,9 @@ fun VoiceChatDialog(
         } catch (e: Exception) {
             Log.e("VoiceChat", "Error stopping speech recognizer", e)
         }
+        try {
+            speechRecognizer?.cancel()
+        } catch (_: Exception) {}
         isListening = false
         isSimulatingMic = false
     }
@@ -480,38 +459,191 @@ fun VoiceChatDialog(
                 Scaffold(
                     containerColor = Color.Transparent,
                     topBar = {
-                    CenterAlignedTopAppBar(
-                        title = {
-                            Text(
-                                text = getVoiceChatText("title", langCode),
-                                fontWeight = FontWeight.Black,
-                                fontSize = 20.sp,
-                                color = MaterialTheme.colorScheme.primary
+                        CenterAlignedTopAppBar(
+                            title = {
+                                Text(
+                                    text = getVoiceChatText("title", langCode),
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 20.sp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            navigationIcon = {
+                                IconButton(onClick = {
+                                    viewModel.stopSpeech()
+                                    onDismiss()
+                                }) {
+                                    Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
+                                }
+                            },
+                            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                             )
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = {
-                                viewModel.stopSpeech()
-                                onDismiss()
-                            }) {
-                                Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
-                            }
-                        },
-                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                         )
-                    )
-                }
-            ) { padding ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
+                    },
+                    bottomBar = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .navigationBarsPadding()
+                                .imePadding()
+                                .padding(horizontal = 16.dp)
+                                .padding(bottom = 54.dp, top = 8.dp)
+                        ) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.surface,
+                                tonalElevation = 8.dp,
+                                shadowElevation = 10.dp,
+                                shape = RoundedCornerShape(32.dp),
+                                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    TextField(
+                                        value = chatInput,
+                                        onValueChange = { chatInput = it },
+                                        placeholder = {
+                                            Text(
+                                                text = getVoiceChatText("placeholder", langCode),
+                                                fontSize = 13.sp,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(24.dp))
+                                            .testTag("voice_chat_text_input"),
+                                        colors = TextFieldDefaults.colors(
+                                            focusedIndicatorColor = Color.Transparent,
+                                            unfocusedIndicatorColor = Color.Transparent
+                                        ),
+                                        maxLines = 2
+                                    )
+
+                                    // Send typed input
+                                    IconButton(
+                                        onClick = {
+                                            if (chatInput.isNotBlank()) {
+                                                val userText = chatInput
+                                                chatInput = ""
+                                                askGemini(userText)
+                                            }
+                                        },
+                                        enabled = chatInput.isNotBlank() && !isThinking,
+                                        modifier = Modifier
+                                            .size(46.dp)
+                                            .background(
+                                                if (chatInput.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                                CircleShape
+                                            )
+                                            .testTag("voice_chat_send_button")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Send,
+                                            contentDescription = "Send",
+                                            tint = if (chatInput.isNotBlank()) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+
+                                    // Big Mic Recording button
+                                    val isActivelyRecording = isListening || isSimulatingMic
+                                    IconButton(
+                                        onClick = {
+                                            if (!isThinking) {
+                                                if (isActivelyRecording) {
+                                                    // Stop listening and immediately submit
+                                                    isListening = false
+                                                    isSimulatingMic = false
+                                                    stopListeningSpeech()
+                                                    if (chatInput.isNotBlank()) {
+                                                        val query = chatInput
+                                                        chatInput = ""
+                                                        askGemini(query)
+                                                    } else {
+                                                        val query = if (currentItem != null) {
+                                                            getVoiceChatText("mock_story", langCode, currentItem.display)
+                                                        } else {
+                                                            getVoiceChatText("mock_joke", langCode)
+                                                        }
+                                                        askGemini(query)
+                                                    }
+                                                } else {
+                                                    // Start listening
+                                                    isSimulatingMic = true
+                                                    val listenText = getVoiceChatText("listening", langCode)
+                                                    responseText = listenText
+                                                    viewModel.speakCustomText(listenText, forceAudio = true)
+
+                                                    if (hasPermission && speechRecognizer != null && SpeechRecognizer.isRecognitionAvailable(context)) {
+                                                        startListeningSpeech()
+                                                    } else if (!hasPermission) {
+                                                        permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                                    }
+
+                                                    coroutineScope.launch {
+                                                        var timer = 0
+                                                        while (timer < 40 && isSimulatingMic) {
+                                                            delay(100)
+                                                            timer++
+                                                        }
+                                                        if (isSimulatingMic) {
+                                                            isSimulatingMic = false
+                                                            isListening = false
+                                                            stopListeningSpeech()
+                                                            val query = if (chatInput.isNotBlank()) {
+                                                                chatInput
+                                                            } else if (currentItem != null) {
+                                                                getVoiceChatText("mock_story", langCode, currentItem.display)
+                                                            } else {
+                                                                getVoiceChatText("mock_joke", langCode)
+                                                            }
+                                                            chatInput = ""
+                                                            askGemini(query)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        modifier = Modifier
+                                            .size(52.dp)
+                                            .background(
+                                                if (isActivelyRecording) Color.Red else MaterialTheme.colorScheme.errorContainer,
+                                                CircleShape
+                                            )
+                                            .border(
+                                                if (isActivelyRecording) BorderStroke(3.dp, Color.White) else BorderStroke(0.dp, Color.Transparent),
+                                                CircleShape
+                                            )
+                                            .testTag("voice_chat_mic_button")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Mic,
+                                            contentDescription = if (isActivelyRecording) "Stop listening" else "Speak now",
+                                            tint = if (isActivelyRecording) Color.White else MaterialTheme.colorScheme.onErrorContainer,
+                                            modifier = Modifier.size(26.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ) { padding ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding)
+                            .padding(16.dp)
+                            .verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                     
                     // Welcome Header Card
                     Card(
@@ -569,14 +701,40 @@ fun VoiceChatDialog(
                             ),
                             border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f))
                         ) {
-                            Text(
-                                text = responseText,
-                                modifier = Modifier.padding(16.dp),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                textAlign = TextAlign.Center
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = responseText,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(end = 8.dp),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    textAlign = TextAlign.Start
+                                )
+                                IconButton(
+                                    onClick = {
+                                        viewModel.speakCustomText(responseText, forceAudio = true)
+                                    },
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                        .testTag("repeat_voiceover_button")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.VolumeUp,
+                                        contentDescription = "Replay speech",
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
                         }
                     } else {
                         Text(
@@ -627,123 +785,11 @@ fun VoiceChatDialog(
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
-
-                    // Custom input area (Mic simulation and TextField)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        TextField(
-                            value = chatInput,
-                            onValueChange = { chatInput = it },
-                            placeholder = {
-                                Text(getVoiceChatText("placeholder", langCode))
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(24.dp))
-                                .testTag("voice_chat_text_input"),
-                            colors = TextFieldDefaults.colors(
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            ),
-                            maxLines = 2
-                        )
-
-                        // Send typed input
-                        IconButton(
-                            onClick = {
-                                if (chatInput.isNotBlank()) {
-                                    val userText = chatInput
-                                    chatInput = ""
-                                    askGemini(userText)
-                                }
-                            },
-                            enabled = chatInput.isNotBlank() && !isThinking,
-                            modifier = Modifier
-                                .background(
-                                    if (chatInput.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                                    CircleShape
-                                )
-                                .testTag("voice_chat_send_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Send,
-                                contentDescription = "Send",
-                                tint = if (chatInput.isNotBlank()) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        // Big Mic Recording button (Uses Android's SpeechRecognizer or fallback if unavailable)
-                        IconButton(
-                            onClick = {
-                                if (!isThinking) {
-                                    if (speechRecognizer == null || !SpeechRecognizer.isRecognitionAvailable(context)) {
-                                        // Fallback toggle for mock simulation (configured with generous timeouts)
-                                        if (isSimulatingMic) {
-                                            isSimulatingMic = false
-                                        } else {
-                                            isSimulatingMic = true
-                                            responseText = getVoiceChatText("listening", langCode)
-                                            coroutineScope.launch {
-                                                // 8-second delay to give them ample time to speak
-                                                var timer = 0
-                                                while (timer < 80 && isSimulatingMic) {
-                                                    delay(100)
-                                                    timer++
-                                                }
-                                                if (isSimulatingMic) {
-                                                    isSimulatingMic = false
-                                                    val mockVoiceResult = if (currentItem != null) {
-                                                        getVoiceChatText("mock_story", langCode, currentItem.display)
-                                                    } else {
-                                                        getVoiceChatText("mock_joke", langCode)
-                                                    }
-                                                    askGemini(mockVoiceResult)
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        // Real Speech-To-Text Recognition
-                                        if (isListening) {
-                                            stopListeningSpeech()
-                                        } else {
-                                            if (hasPermission) {
-                                                startListeningSpeech()
-                                            } else {
-                                                permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            modifier = Modifier
-                                .size(56.dp)
-                                .background(
-                                    if (isSimulatingMic) Color.Red else MaterialTheme.colorScheme.errorContainer,
-                                    CircleShape
-                                )
-                                .border(
-                                    if (isSimulatingMic) BorderStroke(3.dp, Color.White) else BorderStroke(0.dp, Color.Transparent),
-                                    CircleShape
-                                )
-                                .testTag("voice_chat_mic_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Mic,
-                                contentDescription = "Speak now",
-                                tint = if (isSimulatingMic) Color.White else MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
-                    }
                 }
             }
-            }
         }
+        }
+    }
 
         if (showLimitReachedDialog) {
             AlertDialog(
@@ -897,10 +943,22 @@ fun VoiceChatDialog(
                 }
             }
         }
-    }
 }
 
 fun getVoiceChatText(key: String, langCode: String, currentItemDisplay: String? = null): String {
+    val mappedKey = when (key) {
+        "title" -> "vc_title"
+        "welcome" -> "vc_welcome"
+        "instruction" -> "vc_instruction"
+        "thinking" -> "vc_thinking"
+        "placeholder" -> "vc_placeholder"
+        "quick_ask" -> "vc_quick_ask"
+        else -> key
+    }
+    val repoString = CentralizedContentRepository.getLocalizedUiString(mappedKey, langCode)
+    if (repoString != mappedKey) {
+        return repoString
+    }
     return when (key) {
         "title" -> when (langCode) {
             "te" -> "🎙️ AI తో మాటలు"

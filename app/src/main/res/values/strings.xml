@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">Language Guru</string>
     <string name="empty" />
+
+    <!-- Firebase / Google Services Fallback Identifiers -->
+    <string name="google_app_id" translatable="false">1:123456789012:android:languageguru</string>
+    <string name="gcm_defaultSenderId" translatable="false">123456789012</string>
+    <string name="default_web_client_id" translatable="false">languageguru.apps.googleusercontent.com</string>
+    <string name="firebase_database_url" translatable="false">https://languageguru-default-rtdb.firebaseio.com</string>
+    <string name="google_api_key" translatable="false">AIzaSyDummyKeyLanguageGuru</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDummyKeyLanguageGuru</string>
+    <string name="project_id" translatable="false">languageguru-app</string>
 </resources>
